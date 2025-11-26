@@ -12,17 +12,13 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ALM-Asia | Audio Intelligence Platform",
   description: "Next-gen audio intelligence engine that listens, thinks, and understands the entire sonic world — from speech to emotion to environmental reality.",
-  authors: [{ name: "Lovable" }],
   openGraph: {
     title: "ALM-Asia | Audio Intelligence Platform",
     description: "Next-gen audio intelligence engine",
     type: "website",
-    images: ["https://lovable.dev/opengraph-image-p98pqg.png"],
   },
   twitter: {
     card: "summary_large_image",
-    site: "@Lovable",
-    images: ["https://lovable.dev/opengraph-image-p98pqg.png"],
   },
 };
 
