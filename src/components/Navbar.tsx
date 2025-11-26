@@ -58,7 +58,7 @@ export function Navbar() {
               <div className="absolute inset-0 blur-lg bg-accent/30 group-hover:bg-accent/50 transition-all rounded-full" />
               <Waves className="h-8 w-8 text-accent transition-transform relative z-10" />
             </motion.div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-accent via-purple-500 to-accent bg-clip-text text-transparent">
+            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
               ALM-Asia
             </span>
           </Link>

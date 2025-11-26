@@ -101,7 +101,7 @@ export function Hero() {
               <Link href="/analyze">
                 <Button 
                   size="lg" 
-                  className="relative bg-gradient-to-r from-accent via-blue-500 to-purple-500 hover:from-accent/90 hover:via-blue-600 hover:to-purple-600 text-white shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 group px-8 overflow-hidden"
+                  className="relative bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 hover:from-blue-600 hover:via-blue-700 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 group px-8 overflow-hidden"
                 >
                   <span className="relative z-10 flex items-center">
                     Try Demo
