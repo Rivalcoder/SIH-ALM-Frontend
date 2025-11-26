@@ -95,7 +95,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         rotateY,
         transformStyle: "preserve-3d",
       }}
-      className={`group relative ${isLeft ? "md:flex-row" : "md:flex-row-reverse"} flex flex-col md:flex-row items-center gap-8 md:gap-12 max-w-6xl ${isLeft ? "md:ml-0" : "md:ml-auto"}`}
+      className={`group relative ${isLeft ? "md:flex-row" : "md:flex-row-reverse"} flex flex-col md:flex-row items-center gap-4 sm:gap-6 md:gap-8 w-full max-w-4xl ${isLeft ? "md:ml-0" : "md:ml-auto"}`}
     >
       {/* Animated background gradient */}
       <motion.div
@@ -112,7 +112,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
       {/* Glass morphism card */}
       <motion.div
-        className="relative flex-1 glass-strong rounded-3xl p-8 md:p-10 border border-accent/20 group-hover:border-accent/40 transition-all duration-500"
+        className="relative flex-1 glass-strong rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 border border-accent/20 group-hover:border-accent/40 transition-all duration-500"
         animate={{
           boxShadow: isHovered
             ? [
@@ -154,7 +154,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         {/* Content */}
         <div className="relative z-10">
           <motion.h3
-            className="text-3xl md:text-4xl font-bold mb-4 text-foreground group-hover:text-accent transition-colors duration-300"
+            className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 text-foreground group-hover:text-accent transition-colors duration-300"
             initial={{ opacity: 0, x: isLeft ? -20 : 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -164,7 +164,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           </motion.h3>
           
           <motion.p
-            className="text-muted-foreground leading-relaxed text-lg md:text-xl max-w-2xl"
+            className="text-muted-foreground leading-relaxed text-sm sm:text-base md:text-lg max-w-2xl"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -251,7 +251,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           />
           
           {/* Icon background */}
-          <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-3xl bg-gradient-to-br from-accent/30 via-accent/20 to-accent/10 dark:from-accent/40 dark:via-accent/30 dark:to-accent/20 border-2 border-accent/40 flex items-center justify-center shadow-2xl shadow-accent/20 backdrop-blur-sm">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-accent/30 via-accent/20 to-accent/10 dark:from-accent/40 dark:via-accent/30 dark:to-accent/20 border-2 border-accent/40 flex items-center justify-center shadow-2xl shadow-accent/20 backdrop-blur-sm">
             <motion.div
               animate={{
                 rotate: [0, 360],
@@ -262,7 +262,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
                 ease: "linear",
               }}
             >
-              <Icon className="h-12 w-12 md:h-14 md:w-14 text-accent relative z-10" />
+              <Icon className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-accent relative z-10" />
             </motion.div>
           </div>
 
@@ -329,7 +329,7 @@ export function Features() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center mb-20">
+        <div className="text-center mb-12 sm:mb-16 md:mb-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -390,7 +390,7 @@ export function Features() {
         </div>
 
         {/* Features grid */}
-        <div className="space-y-16 md:space-y-24">
+        <div className="space-y-8 px-4 sm:px-6 md:space-y-14 md:pl-16 md:pr-16 lg:space-y-16">
           {features.map((feature, index) => (
             <FeatureCard key={index} feature={feature} index={index} />
           ))}
