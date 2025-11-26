@@ -15,12 +15,12 @@ export function Navbar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => pathname === path;
+  const isHomePage = pathname === "/";
 
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/analyze", label: "Analyze" },
-    { href: "/graph", label: "Graph" },
   ];
 
   useEffect(() => {
@@ -63,30 +63,32 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all relative",
-                  isActive(link.href)
-                    ? "bg-accent text-accent-foreground shadow-md shadow-accent/20"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
-                )}
-              >
-                {link.label}
-                {isActive(link.href) && (
-                  <motion.div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-foreground/20"
-                    layoutId="activeTab"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </Link>
-            ))}
-          </div>
+          {/* Desktop Navigation - hidden on home page */}
+          {!isHomePage && (
+            <div className="hidden md:flex items-center space-x-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-medium transition-all relative",
+                    isActive(link.href)
+                      ? "bg-accent text-accent-foreground shadow-md shadow-accent/20"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+                  )}
+                >
+                  {link.label}
+                  {isActive(link.href) && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-foreground/20"
+                      layoutId="activeTab"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-3">
@@ -94,9 +96,9 @@ export function Navbar() {
             <Link href="/signin">
               <Button 
                 variant="ghost" 
-                className="hover:bg-accent/10 transition-all"
+                className="hover:bg-accent/10 transition-all relative z-10 overflow-visible"
               >
-                Sign In
+                <span className="relative z-20 text-foreground">Sign In</span>
               </Button>
             </Link>
             <Link href="/signup">
@@ -124,10 +126,10 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu - hide nav links on home page */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-border/50 py-4 space-y-2 fade-in-up">
-            {navLinks.map((link) => (
+            {!isHomePage && navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -144,8 +146,8 @@ export function Navbar() {
             ))}
             <div className="flex flex-col space-y-2 pt-4 border-t border-border/50">
               <Link href="/signin" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="ghost" className="w-full hover:bg-accent/10">
-                  Sign In
+                <Button variant="ghost" className="w-full hover:bg-accent/10 relative z-10 overflow-visible">
+                  <span className="relative z-20 text-foreground">Sign In</span>
                 </Button>
               </Link>
               <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>

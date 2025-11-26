@@ -483,7 +483,7 @@ export function Showcase() {
             backgroundSize: "50px 50px",
           }}
         />
-      </div>
+        </div>
 
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 z-10">
         {/* Header */}
@@ -558,7 +558,7 @@ export function Showcase() {
             Airports, markets, traffic, factories, temples, metros — sounds everywhere carry meaning. 
             ALM-Asia extracts it, stitches it, and delivers context no other AI model can.
           </motion.p>
-        </div>
+          </div>
 
         {/* Interactive orbs grid */}
         <div className="relative max-w-6xl mx-auto">
