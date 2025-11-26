@@ -101,19 +101,25 @@ export function Hero() {
               <Link href="/analyze">
                 <Button 
                   size="lg" 
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground hover-glow shine group px-8"
+                  className="relative bg-gradient-to-r from-accent via-blue-500 to-purple-500 hover:from-accent/90 hover:via-blue-600 hover:to-purple-600 text-white shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 group px-8 overflow-hidden"
                 >
-                  Try Demo
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <span className="relative z-10 flex items-center">
+                    Try Demo
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 </Button>
               </Link>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-border hover:bg-accent/5 px-8 group"
+                className="relative border-2 border-accent/30 hover:border-accent/50 bg-background/50 dark:bg-background/30 hover:bg-accent/10 backdrop-blur-sm px-8 group transition-all duration-300 shadow-md hover:shadow-lg overflow-visible"
               >
-                <BookOpen className="mr-2 h-5 w-5" />
-                Explore Docs
+                <span className="relative z-20 flex items-center text-foreground dark:text-foreground">
+                  <BookOpen className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                  Explore Docs
+                </span>
               </Button>
             </div>
           </div>
