@@ -46,8 +46,7 @@ const defaultItemVariant: Variants = {
   },
 };
 
-export const SplittingText: React.FC<SplittingTextProps> = ({
-  ref,
+export const SplittingText = React.forwardRef<HTMLDivElement, SplittingTextProps>(({
   text,
   type = 'chars',
   motionVariants = {},
@@ -56,7 +55,7 @@ export const SplittingText: React.FC<SplittingTextProps> = ({
   inViewOnce = true,
   delay = 0,
   ...props
-}) => {
+}, ref) => {
   const items = React.useMemo<React.ReactNode[]>(() => {
     if (Array.isArray(text)) {
       return text.flatMap((line, i) => [
@@ -106,7 +105,7 @@ export const SplittingText: React.FC<SplittingTextProps> = ({
   };
 
   const localRef = React.useRef<HTMLDivElement>(null);
-  React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
+  React.useImperativeHandle(ref, () => localRef.current!);
 
   const inViewResult = useInView(localRef, {
     once: inViewOnce,
@@ -147,5 +146,7 @@ export const SplittingText: React.FC<SplittingTextProps> = ({
       )}
     </motion.span>
   );
-};
+});
+
+SplittingText.displayName = "SplittingText";
 

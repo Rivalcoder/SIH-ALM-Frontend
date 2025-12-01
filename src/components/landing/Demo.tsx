@@ -123,7 +123,7 @@ export function Demo() {
                   Ready to Analyze Audio?
                 </h3>
                 <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto">
-                  Upload any audio file and experience ALM-Asia's powerful analysis capabilities
+                  Upload any audio file and experience ALM-Asia&apos;s powerful analysis capabilities
                 </p>
               </div>
 
@@ -324,7 +324,7 @@ export function Demo() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Transcript:</p>
                   <p className="text-foreground">
-                    "Hello, I need assistance with my flight booking..."
+                    &quot;Hello, I need assistance with my flight booking...&quot;
                   </p>
                 </div>
                 <div>

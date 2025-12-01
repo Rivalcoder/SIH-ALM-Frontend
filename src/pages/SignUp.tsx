@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,12 +13,12 @@ export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Demo: redirect to dashboard
-    navigate("/dashboard");
+    router.push("/dashboard");
   };
 
   return (
@@ -34,7 +35,7 @@ export default function SignUp() {
 
       <Card className="w-full max-w-md glass-strong p-8 relative z-10 fade-in-up">
         {/* Logo */}
-        <Link to="/" className="flex items-center justify-center space-x-2 mb-8 group">
+        <Link href="/" className="flex items-center justify-center space-x-2 mb-8 group">
           <Waves className="h-10 w-10 text-accent" />
           <span className="text-2xl font-bold gradient-text">ALM-Asia</span>
         </Link>
@@ -107,7 +108,7 @@ export default function SignUp() {
         {/* Sign in link */}
         <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{" "}
-          <Link to="/signin" className="text-accent hover:underline font-medium">
+          <Link href="/signin" className="text-accent hover:underline font-medium">
             Sign in
           </Link>
         </p>

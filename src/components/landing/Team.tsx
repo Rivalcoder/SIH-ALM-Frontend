@@ -249,7 +249,7 @@ export function Team() {
                     >
                       <Quote className="absolute -top-2 -left-2 h-6 w-6 sm:h-8 sm:w-8 text-accent/30" />
                       <blockquote className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed italic pl-5 sm:pl-6 border-l-2 border-accent/30">
-                        "{selectedMember.quote}"
+                        &quot;{selectedMember.quote}&quot;
                       </blockquote>
                     </motion.div>
 

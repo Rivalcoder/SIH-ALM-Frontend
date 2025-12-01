@@ -44,7 +44,7 @@ export default function SignIn() {
         {/* Heading */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome Back to the Soundverse</h1>
-          <p className="text-muted-foreground">Let's continue decoding reality.</p>
+          <p className="text-muted-foreground">Let&apos;s continue decoding reality.</p>
         </div>
 
         {/* Form */}
@@ -101,7 +101,7 @@ export default function SignIn() {
 
         {/* Sign up link */}
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-accent hover:underline font-medium">
             Sign up
           </Link>

@@ -110,9 +110,9 @@ export default function Analyze() {
                   Transcript
                 </h3>
                 <p className="text-foreground leading-relaxed">
-                  "Hello, this is a customer service call regarding flight booking. 
+                  &quot;Hello, this is a customer service call regarding flight booking. 
                   I need to change my departure date from March 15th to March 20th. 
-                  My booking reference is ABC123. Could you please help me with this change?"
+                  My booking reference is ABC123. Could you please help me with this change?&quot;
                 </p>
               </Card>
 
