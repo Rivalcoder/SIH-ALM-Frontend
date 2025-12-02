@@ -148,274 +148,139 @@ function CapabilityOrb({
       }}
       className="group relative"
     >
-      {/* Dark background on hover - only in dark mode */}
+      {/* Main card container - circular glass orb */}
       <motion.div
-        className="absolute inset-0 rounded-3xl hidden dark:block bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
-      />
-
-      {/* Main orb container - ensure it's square for perfect circle */}
-      <motion.div
-        className="relative w-full aspect-square rounded-3xl overflow-hidden"
+        className="relative w-full aspect-square overflow-hidden rounded-full"
         animate={{
-          scale: expanded ? 1.03 : 1,
-          borderRadius: expanded ? "1.5rem" : "50%",
+          scale: expanded ? 1.02 : 1,
         }}
         transition={{
-          duration: 0.6,
+          duration: 0.3,
           ease: [0.16, 1, 0.3, 1],
         }}
       >
 
-        {/* Glass morphism surface - transparent in light mode, dark in dark mode */}
+        {/* Glass morphism surface - subtle circular highlight, very transparent */}
         <motion.div 
-          className="absolute inset-0 backdrop-blur-xl border"
+          className="absolute inset-0 backdrop-blur-xl border rounded-full"
           style={{
-            background: expanded 
-              ? "transparent" 
-              : "transparent",
-            borderColor: `${capability.glowColor}40`,
-            boxShadow: `0 4px 16px ${capability.glowColor}30`,
+            background: expanded
+              ? `radial-gradient(circle at 50% 30%, rgba(255,255,255,0.16), transparent 60%), radial-gradient(circle, rgba(0,0,0,0.9), rgba(0,0,0,1))`
+              : "radial-gradient(circle at 50% 120%, rgba(255,255,255,0.06), transparent 75%)",
+            borderColor: `${capability.glowColor}22`,
+            boxShadow: expanded
+              ? `0 0 32px ${capability.glowColor}55`
+              : `0 0 10px ${capability.glowColor}25`,
           }}
         />
-        {/* Dark mode overlay - dark background on hover */}
-        <motion.div 
-          className="absolute inset-0 backdrop-blur-xl border hidden dark:block"
+
+        {/* Pulsing outline around card when hovered - circular */}
+        <motion.div
+          className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            background: expanded 
-              ? "rgba(0, 0, 0, 0.4)" 
-              : "transparent",
+            border: "1px solid",
             borderColor: `${capability.glowColor}40`,
-            boxShadow: `0 4px 16px ${capability.glowColor}30`,
           }}
-          transition={{ duration: 0.3 }}
+          animate={expanded
+            ? {
+                opacity: [0.45, 0, 0.45],
+                scale: [1, 1.03, 1],
+              }
+            : {
+                opacity: 0,
+                scale: 1,
+              }}
+          transition={{
+            duration: 1.4,
+            repeat: expanded ? Infinity : 0,
+            ease: "easeOut",
+          }}
         />
 
-
-        {/* Floating particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              width: `${4 + Math.random() * 4}px`,
-              height: `${4 + Math.random() * 4}px`,
-              background: capability.glowColor,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              x: [0, (Math.random() - 0.5) * 40, 0],
-              opacity: [0, expanded ? 0.8 : 0.3, 0],
-              scale: [0, 1, 0],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: i * 0.3,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center p-6 text-center">
-          {/* Icon with morphing container */}
+          {/* Icon + label */}
           <motion.div
-            className="relative mb-6"
+            className="relative mb-4 flex flex-col items-center"
             animate={{
-              y: expanded ? 0 : [0, -12, 0],
-              scale: expanded ? 1.2 : 1,
+              y: expanded ? -4 : 0,
             }}
             transition={{
-              y: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: index * 0.2,
-              },
-              scale: {
-                duration: 0.5,
-                ease: [0.23, 1, 0.32, 1],
-              },
+              duration: 0.25,
+              ease: [0.23, 1, 0.32, 1],
             }}
           >
-            {/* Pulsing orb rings - visible pulse only */}
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute inset-0 rounded-full border-2 pointer-events-none"
-                style={{
-                  borderColor: capability.glowColor,
-                  left: `${-i * 20}px`,
-                  top: `${-i * 20}px`,
-                  right: `${-i * 20}px`,
-                  bottom: `${-i * 20}px`,
-                  filter: `drop-shadow(0 0 ${4 + i * 2}px ${capability.glowColor})`,
-                }}
-                animate={{
-                  scale: [1, 1.5 + i * 0.3, 1],
-                  opacity: [0.8 - i * 0.2, 0, 0.8 - i * 0.2],
-                }}
-                transition={{
-                  duration: 2.5 + i * 0.5,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                  delay: i * 0.3 + index * 0.1,
-                }}
-              />
-            ))}
-
-            {/* Icon container with morphing shape - transparent background */}
             <motion.div
-              className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center"
+              className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-full border shadow-lg bg-background/5 dark:bg-background/20"
+              style={{
+                borderColor: `rgba(255,255,255,0.14)`,
+                boxShadow: expanded
+                  ? `0 0 36px ${capability.glowColor}75, 0 10px 26px rgba(0,0,0,0.55)`
+                  : `0 0 18px ${capability.glowColor}45, 0 6px 16px rgba(0,0,0,0.45)`,
+              }}
               animate={{
-                borderRadius: expanded ? "1rem" : "50%",
-                rotate: expanded ? [0, 360] : 0,
-                scale: expanded ? 1.1 : 1,
+                scale: expanded ? [1, 1.05, 1] : 1,
               }}
               transition={{
-                borderRadius: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
-                rotate: {
-                  duration: expanded ? 20 : 0,
-                  repeat: Infinity,
-                  ease: "linear",
-                },
-                scale: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-              }}
-              style={{
-                background: "transparent",
-                boxShadow: expanded 
-                  ? `0 0 50px ${capability.glowColor}80, 0 4px 12px ${capability.glowColor}40`
-                  : `0 0 30px ${capability.glowColor}50, 0 2px 8px ${capability.glowColor}30`,
+                duration: expanded ? 1.6 : 0.3,
+                repeat: expanded ? Infinity : 0,
+                ease: "easeInOut",
               }}
             >
+              {/* Pulsing glow behind icon when hovered */}
               <motion.div
-                animate={{
-                  rotate: expanded ? [0, -360] : 0,
-                }}
-                transition={{
-                  duration: expanded ? 15 : 0,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-              >
-                <Icon 
-                  className={`h-10 w-10 sm:h-12 sm:w-12 ${capability.iconColor} relative z-10`}
-                  style={{
-                    filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 8px currentColor)",
-                  }}
-                />
-              </motion.div>
-
-              {/* Inner glow - pulse effect only */}
-              <motion.div
-                className="absolute inset-0 rounded-full pointer-events-none"
+                className="absolute inset-0 rounded-full"
                 style={{
-                  background: `radial-gradient(circle, ${capability.glowColor.replace('0.6', '0.4')}, transparent 70%)`,
+                  background: `radial-gradient(circle, ${capability.glowColor}40, transparent 70%)`,
                 }}
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.4, 0.8, 0.4],
-                }}
+                animate={expanded
+                  ? {
+                      scale: [1, 1.18, 1],
+                      opacity: [0.5, 0, 0.5],
+                    }
+                  : {
+                      scale: 1,
+                      opacity: 0,
+                    }}
                 transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
+                  duration: 1.8,
+                  repeat: expanded ? Infinity : 0,
+                  ease: "easeOut",
                 }}
               />
+              <Icon
+                className={`h-10 w-10 sm:h-12 sm:w-12 ${capability.iconColor}`}
+              />
             </motion.div>
+            <motion.h3
+              className="font-bold text-sm sm:text-base mt-4 text-foreground"
+              style={{
+                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              }}
+              initial={false}
+              animate={{ opacity: 1 }}
+            >
+              {capability.label}
+            </motion.h3>
           </motion.div>
 
-          {/* Text content with slide animation */}
-          <AnimatePresence mode="wait">
-            {expanded && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden"
-              >
-                <motion.h3
-                  className="font-bold text-lg sm:text-xl mb-2 text-foreground"
-                  style={{ 
-                    textShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  {capability.label}
-                </motion.h3>
-                
-                <motion.p
-                  className="text-sm sm:text-base mb-4 leading-relaxed font-semibold text-foreground/80"
-                  style={{
-                    textShadow: "0 1px 4px rgba(0,0,0,0.15)",
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  {capability.description}
-                </motion.p>
-
-                <motion.div
-                  className="flex items-center justify-center gap-2 font-bold text-foreground/70"
-                  style={{ 
-                    textShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                  }}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <span className="text-xs">Explore</span>
-                  <ArrowRight className="h-4 w-4" />
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Compact label when not expanded */}
-          <AnimatePresence>
-            {!expanded && (
-              <motion.h3
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="font-bold text-sm sm:text-base mt-4 text-foreground"
-                style={{ 
-                  textShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                }}
-              >
-                {capability.label}
-              </motion.h3>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Interactive light spot that follows mouse */}
-        {expanded && (
-          <motion.div
-            className="absolute rounded-full pointer-events-none"
+          {/* Description shown more on hover */}
+          <motion.p
+            className="text-xs sm:text-sm leading-relaxed text-foreground/80 max-w-xs mx-auto"
             style={{
-              width: "200px",
-              height: "200px",
-              background: `radial-gradient(circle, ${capability.glowColor}30, transparent 70%)`,
-              left: mousePosition.x - 100,
-              top: mousePosition.y - 100,
+              textShadow: "0 1px 4px rgba(0,0,0,0.25)",
             }}
+            initial={false}
             animate={{
-              scale: [1, 1.2, 1],
+              opacity: expanded ? 1 : 0.7,
+              y: expanded ? 0 : 4,
             }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        )}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            {capability.description}
+          </motion.p>
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -426,49 +291,11 @@ export function Showcase() {
 
   return (
     <section className="py-24 md:py-32 relative overflow-hidden">
-      {/* Animated mesh gradient background */}
+      {/* Mesh gradient background (static to improve scroll performance) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.3, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-cyan-500/20 via-teal-500/20 to-emerald-500/20 blur-3xl"
-          animate={{
-            x: [0, -100, 0],
-            y: [0, -50, 0],
-            scale: [1, 1.3, 1],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-violet-500/10 via-fuchsia-500/10 to-rose-500/10 blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 360],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-cyan-500/20 via-teal-500/20 to-emerald-500/20 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-violet-500/10 via-fuchsia-500/10 to-rose-500/10 blur-3xl" />
       </div>
 
       {/* Animated grid pattern */}
@@ -604,14 +431,14 @@ export function Showcase() {
                         strokeWidth="2"
                         filter="url(#energyGlow)"
                         initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: hoveredIndex === i || hoveredIndex === i + j + 1 ? 0.6 : 0.15 }}
+                        whileInView={{ pathLength: 1, opacity: hoveredIndex === i || hoveredIndex === i + j + 1 ? 0.8 : 0.25 }}
                         viewport={{ once: true }}
                         transition={{
                           pathLength: { duration: 2, delay: (i + j) * 0.15, ease: "easeInOut" },
                           opacity: { duration: 0.3 },
                         }}
                         animate={{
-                          opacity: hoveredIndex === i || hoveredIndex === i + j + 1 ? 0.6 : 0.15,
+                          opacity: hoveredIndex === i || hoveredIndex === i + j + 1 ? 0.8 : 0.25,
                         }}
                       />
                     );
@@ -623,7 +450,7 @@ export function Showcase() {
           </div>
 
           {/* Orbs grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-16 relative z-10">
             {capabilities.map((capability, index) => (
               <CapabilityOrb
                 key={index}
