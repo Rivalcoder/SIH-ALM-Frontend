@@ -5,25 +5,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import { SplittingText } from "@/components/ui/splitting-text";
-import { useEffect, useState } from "react";
+import { AudioVisualization } from "@/components/landing/AudioVisualization";
 
 export function Hero() {
-  const [waveformHeights, setWaveformHeights] = useState<number[]>([]);
-
-  useEffect(() => {
-    // Initialize waveform heights
-    const initialHeights = Array.from({ length: 60 }, () => Math.random() * 100);
-    setWaveformHeights(initialHeights);
-
-    // Animate waveform continuously
-    const interval = setInterval(() => {
-      setWaveformHeights(prev => 
-        prev.map(() => Math.random() * 100)
-      );
-    }, 150);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -126,45 +110,9 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Side - Audio Visualization */}
-          <div className="hidden lg:flex flex-col items-center justify-center space-y-6">
-            {/* Main Waveform */}
-            <div className="relative w-full max-w-md">
-              <div className="flex items-end justify-center h-64 space-x-1 bg-background/40 dark:bg-background/20 backdrop-blur-sm rounded-2xl p-8 border-2 border-accent/30 dark:border-accent/20 shadow-lg dark:shadow-none">
-                {waveformHeights.map((height, i) => (
-                  <div
-                    key={i}
-                    className="w-1.5 bg-gradient-to-t from-accent via-accent/90 to-accent/50 dark:from-accent dark:dark:via-accent/80 dark:to-accent/40 rounded-full transition-all duration-150 ease-out shadow-sm dark:shadow-none"
-                    style={{
-                      height: `${height}%`,
-                      minHeight: '10%',
-                    }}
-                  />
-                ))}
-              </div>
-              
-              {/* Sound waves circles */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="relative w-32 h-32">
-                  {[1, 2, 3].map((ring) => (
-                    <div
-                      key={ring}
-                      className="absolute inset-0 rounded-full border-2 border-accent/50 dark:border-accent/30 animate-ping"
-                      style={{
-                        animationDelay: `${ring * 0.5}s`,
-                        animationDuration: '2s',
-                        transform: `scale(${1 + ring * 0.3})`,
-                      }}
-                    />
-                  ))}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-accent/30 dark:bg-accent/20 flex items-center justify-center shadow-md dark:shadow-none">
-                      <div className="w-8 h-8 rounded-full bg-accent dark:bg-accent pulse-glow shadow-lg dark:shadow-none" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Right Side - Advanced Audio Visualization */}
+          <div className="hidden lg:flex flex-col items-center justify-center">
+            <AudioVisualization />
           </div>
 
           {/* Mobile: Small waveform at bottom */}
