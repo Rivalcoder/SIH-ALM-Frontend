@@ -111,16 +111,18 @@ export function Hero() {
                   <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 </Button>
               </Link>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="relative border-2 border-accent/30 hover:border-accent/50 bg-background/50 dark:bg-background/30 hover:bg-accent/10 backdrop-blur-sm px-8 group transition-all duration-300 shadow-md hover:shadow-lg overflow-visible"
-              >
-                <span className="relative z-20 flex items-center text-foreground dark:text-foreground">
-                  <BookOpen className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                  Explore Docs
-                </span>
-              </Button>
+              <Link href="/docs">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="relative border-2 border-accent/30 hover:border-accent/50 bg-background/50 dark:bg-background/30 hover:bg-accent/10 backdrop-blur-sm px-8 group transition-all duration-300 shadow-md hover:shadow-lg overflow-visible"
+                >
+                  <span className="relative z-20 flex items-center text-foreground dark:text-foreground">
+                    <BookOpen className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                    Explore Dataset
+                  </span>
+                </Button>
+              </Link>
             </div>
           </div>
 
