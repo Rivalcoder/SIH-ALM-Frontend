@@ -421,8 +421,12 @@ export default function Analyze() {
           {!hasResults && (
                 <Card className="p-8">
               <div
-                className="border-2 border-dashed border-border rounded-lg p-16 text-center hover:border-accent transition-all cursor-pointer group"
-                    onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-lg p-16 text-center transition-all ${
+                  isUploading || isAnalyzing 
+                    ? "border-accent/50 bg-gradient-to-br from-accent/10 via-accent/5 to-background cursor-wait" 
+                    : "border-border hover:border-accent cursor-pointer group"
+                }`}
+                    onClick={() => !isUploading && !isAnalyzing && fileInputRef.current?.click()}
                   >
                     <input
                       ref={fileInputRef}
@@ -430,14 +434,260 @@ export default function Analyze() {
                       accept="audio/*"
                       onChange={handleFileSelect}
                       className="hidden"
+                      disabled={isUploading || isAnalyzing}
                     />
                 {isUploading || isAnalyzing ? (
-                  <div className="space-y-4">
-                    <Loader2 className="h-12 w-12 mx-auto text-accent animate-spin" />
-                    <p className="text-lg">
-                      {isUploading ? "Uploading..." : "Analyzing audio..."}
-                    </p>
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-6"
+                  >
+                    {/* Enhanced Processing Header */}
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.15, 1],
+                          rotate: [0, 5, -5, 0]
+                        }}
+                        transition={{ 
+                          duration: 2, 
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        className="relative"
+                      >
+                        <div className="absolute inset-0 bg-accent/30 rounded-full blur-2xl animate-pulse" />
+                        <div className="relative p-5 rounded-full bg-gradient-to-br from-accent/40 to-accent/20 border-2 border-accent/50">
+                          <Loader2 className="h-10 w-10 text-accent animate-spin" />
+                        </div>
+                      </motion.div>
+                      <div className="text-center">
+                        <motion.p 
+                          className="text-xl font-bold bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent"
+                          animate={{ opacity: [0.7, 1, 0.7] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          {isUploading ? "Uploading Audio..." : "Processing Audio..."}
+                        </motion.p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {isUploading ? "Please wait while we upload your file" : "Analyzing your audio file"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Waveform Animation */}
+                    <div className="relative flex items-center justify-center h-48 space-x-1 bg-gradient-to-br from-accent/15 via-accent/8 to-background rounded-xl p-8 border-2 border-accent/40 shadow-2xl overflow-hidden">
+                      {/* Animated background gradient */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-accent/10 via-accent/20 to-accent/10"
+                        animate={{
+                          x: ['-100%', '100%'],
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "linear"
+                        }}
+                      />
+                      {/* Wave bars */}
+                      {[...Array(150)].map((_, i) => {
+                        const delay = i * 0.008;
+                        const baseHeight = 15;
+                        const variation = 80;
+                        const frequency = 0.12;
+                        return (
+                          <motion.div
+                            key={i}
+                            className="w-1.5 bg-gradient-to-t from-accent via-accent/90 to-accent/70 rounded-full shadow-md"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{
+                              height: [
+                                `${baseHeight + Math.sin(i * frequency) * variation}%`,
+                                `${baseHeight + Math.sin(i * frequency + Math.PI) * variation}%`,
+                                `${baseHeight + Math.sin(i * frequency + Math.PI * 2) * variation}%`,
+                                `${baseHeight + Math.sin(i * frequency) * variation}%`,
+                              ],
+                              opacity: [0.3, 1, 0.8, 0.3],
+                            }}
+                            transition={{
+                              duration: 1.2 + Math.random() * 0.3,
+                              delay: delay,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                            style={{
+                              filter: `hue-rotate(${i * 2.4}deg) brightness(${1 + Math.sin(i * 0.1) * 0.2})`,
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* Processing Steps */}
+                    <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+                      {isUploading ? (
+                        <>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border/50"
+                          >
+                            <motion.div
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 10, -10, 0]
+                              }}
+                              transition={{ 
+                                duration: 2, 
+                                repeat: Infinity,
+                                delay: 0
+                              }}
+                              className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20"
+                            >
+                              <Upload className="h-5 w-5 text-blue-500" />
+                            </motion.div>
+                            <motion.p
+                              className="text-xs font-medium text-center"
+                              animate={{ opacity: [0.5, 1, 0.5] }}
+                              transition={{ 
+                                duration: 1.5, 
+                                repeat: Infinity,
+                                delay: 0
+                              }}
+                            >
+                              Uploading File
+                            </motion.p>
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/20 border border-border/30 opacity-50"
+                          >
+                            <div className="p-2 rounded-lg bg-gray-500/10 border border-gray-500/20">
+                              <FileAudio className="h-5 w-5 text-gray-500" />
+                            </div>
+                            <p className="text-xs font-medium text-center text-muted-foreground">
+                              Processing
+                            </p>
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/20 border border-border/30 opacity-50"
+                          >
+                            <div className="p-2 rounded-lg bg-gray-500/10 border border-gray-500/20">
+                              <Sparkles className="h-5 w-5 text-gray-500" />
+                            </div>
+                            <p className="text-xs font-medium text-center text-muted-foreground">
+                              Analyzing
+                            </p>
+                          </motion.div>
+                        </>
+                      ) : (
+                        <>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border/50"
+                          >
+                            <motion.div
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 10, -10, 0]
+                              }}
+                              transition={{ 
+                                duration: 2, 
+                                repeat: Infinity,
+                                delay: 0
+                              }}
+                              className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20"
+                            >
+                              <AudioWaveform className="h-5 w-5 text-blue-500" />
+                            </motion.div>
+                            <motion.p
+                              className="text-xs font-medium text-center"
+                              animate={{ opacity: [0.5, 1, 0.5] }}
+                              transition={{ 
+                                duration: 1.5, 
+                                repeat: Infinity,
+                                delay: 0
+                              }}
+                            >
+                              Analyzing Waveform
+                            </motion.p>
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border/50"
+                          >
+                            <motion.div
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 10, -10, 0]
+                              }}
+                              transition={{ 
+                                duration: 2, 
+                                repeat: Infinity,
+                                delay: 0.3
+                              }}
+                              className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20"
+                            >
+                              <Mic className="h-5 w-5 text-purple-500" />
+                            </motion.div>
+                            <motion.p
+                              className="text-xs font-medium text-center"
+                              animate={{ opacity: [0.5, 1, 0.5] }}
+                              transition={{ 
+                                duration: 1.5, 
+                                repeat: Infinity,
+                                delay: 0.2
+                              }}
+                            >
+                              Detecting Speakers
+                            </motion.p>
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border/50"
+                          >
+                            <motion.div
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 10, -10, 0]
+                              }}
+                              transition={{ 
+                                duration: 2, 
+                                repeat: Infinity,
+                                delay: 0.6
+                              }}
+                              className="p-2 rounded-lg bg-green-500/10 border border-green-500/20"
+                            >
+                              <MessageSquare className="h-5 w-5 text-green-500" />
+                            </motion.div>
+                            <motion.p
+                              className="text-xs font-medium text-center"
+                              animate={{ opacity: [0.5, 1, 0.5] }}
+                              transition={{ 
+                                duration: 1.5, 
+                                repeat: Infinity,
+                                delay: 0.4
+                              }}
+                            >
+                              Transcribing
+                            </motion.p>
+                          </motion.div>
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
                 ) : (
                   <>
                     <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground group-hover:text-accent transition-colors group-hover:scale-110 duration-300" />
