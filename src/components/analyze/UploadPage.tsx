@@ -344,7 +344,7 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
             {/* Enhanced features section */}
             <section id="features-mini" className="w-full py-12">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold font-headline mb-4 animate-fade-in-up">What You'll Get</h2>
+                <h2 className="text-3xl md:text-4xl font-bold font-headline mb-4 animate-fade-in-up">What You&apos;ll Get</h2>
                 <p className="text-lg text-foreground/70 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                   Advanced AI-powered analysis with comprehensive insights
                 </p>
