@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import { SplittingText } from "@/components/ui/splitting-text";
 import { AudioVisualization } from "@/components/landing/AudioVisualization";
+import HeroVisual from "@/components/landing/HeroVisual";
 
 export function Hero() {
 
@@ -110,9 +111,9 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Side - Advanced Audio Visualization */}
+          {/* Right Side - SVG Animation with floating chips */}
           <div className="hidden lg:flex flex-col items-center justify-center">
-            <AudioVisualization />
+            <HeroVisual />
           </div>
 
           {/* Mobile: Small waveform at bottom */}

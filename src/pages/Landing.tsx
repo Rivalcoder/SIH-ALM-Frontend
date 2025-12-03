@@ -5,6 +5,7 @@ import { Showcase } from "@/components/landing/Showcase";
 import { Demo } from "@/components/landing/Demo";
 import { Team } from "@/components/landing/Team";
 import { Lanyard } from "@/components/landing/Lanyard";
+import { ReadyToDive } from "@/components/landing/ReadyToDive";
 import { Footer } from "@/components/landing/Footer";
 
 export default function Landing() {
@@ -17,6 +18,7 @@ export default function Landing() {
       <Demo />
       <Team />
       <Lanyard />
+      <ReadyToDive />
       <Footer />
     </div>
   );
