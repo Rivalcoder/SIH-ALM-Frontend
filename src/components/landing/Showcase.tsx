@@ -160,30 +160,46 @@ function CapabilityOrb({
         }}
       >
 
-        {/* Glass morphism surface - subtle circular highlight, very transparent */}
+        {/* Glass morphism surface - subtle black/gray with transparency in light mode */}
         <motion.div 
-          className="absolute inset-0 backdrop-blur-xl border rounded-full"
+          className="absolute inset-0 backdrop-blur-xl border rounded-full dark:bg-transparent"
           style={{
-            background: expanded
-              ? `radial-gradient(circle at 50% 30%, rgba(255,255,255,0.16), transparent 60%), radial-gradient(circle, rgba(0,0,0,0.9), rgba(0,0,0,1))`
-              : "radial-gradient(circle at 50% 120%, rgba(255,255,255,0.06), transparent 75%)",
-            borderColor: `${capability.glowColor}22`,
+            background: "rgba(0, 0, 0, 0.04)",
+            borderColor: expanded 
+              ? `${capability.glowColor}88`
+              : "hsl(var(--border) / 0.3)",
             boxShadow: expanded
-              ? `0 0 32px ${capability.glowColor}55`
-              : `0 0 10px ${capability.glowColor}25`,
+              ? `0 0 32px ${capability.glowColor}55, inset 0 0 20px ${capability.glowColor}15`
+              : "0 2px 8px rgba(0,0,0,0.05)",
           }}
         />
+        {/* Subtle gradient overlay for depth in light mode */}
+        <motion.div 
+          className="absolute inset-0 rounded-full pointer-events-none dark:hidden"
+          style={{
+            background: "radial-gradient(circle at 50% 50%, rgba(0,0,0,0.06), rgba(0,0,0,0.02))",
+          }}
+        />
+        {/* Light mode only highlight - hidden in dark mode */}
+        {expanded && (
+          <motion.div 
+            className="absolute inset-0 rounded-full pointer-events-none dark:hidden"
+            style={{
+              background: "radial-gradient(circle at 50% 30%, rgba(255,255,255,0.2), transparent 60%)",
+            }}
+          />
+        )}
 
         {/* Pulsing outline around card when hovered - circular */}
         <motion.div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            border: "1px solid",
-            borderColor: `${capability.glowColor}40`,
+            border: "2px solid",
+            borderColor: `${capability.glowColor}80`,
           }}
           animate={expanded
             ? {
-                opacity: [0.45, 0, 0.45],
+                opacity: [0.7, 0.3, 0.7],
                 scale: [1, 1.03, 1],
               }
             : {
@@ -212,12 +228,15 @@ function CapabilityOrb({
             }}
           >
             <motion.div
-              className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-full border shadow-lg bg-background/5 dark:bg-background/20"
+              className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-full border shadow-lg dark:bg-background/20 backdrop-blur-sm"
               style={{
-                borderColor: `rgba(255,255,255,0.14)`,
+                background: "rgba(0, 0, 0, 0.06)",
+                borderColor: expanded 
+                  ? `${capability.glowColor}60`
+                  : "hsl(var(--border) / 0.4)",
                 boxShadow: expanded
-                  ? `0 0 36px ${capability.glowColor}75, 0 10px 26px rgba(0,0,0,0.55)`
-                  : `0 0 18px ${capability.glowColor}45, 0 6px 16px rgba(0,0,0,0.45)`,
+                  ? `0 0 36px ${capability.glowColor}75, 0 10px 26px rgba(0,0,0,0.1), inset 0 0 20px ${capability.glowColor}20`
+                  : "0 2px 8px rgba(0,0,0,0.08)",
               }}
               animate={{
                 scale: expanded ? [1, 1.05, 1] : 1,
@@ -256,7 +275,9 @@ function CapabilityOrb({
             <motion.h3
               className="font-bold text-sm sm:text-base mt-4 text-foreground"
               style={{
-                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                textShadow: expanded 
+                  ? "0 2px 8px rgba(0,0,0,0.1)"
+                  : "none",
               }}
               initial={false}
               animate={{ opacity: 1 }}
@@ -267,9 +288,11 @@ function CapabilityOrb({
 
           {/* Description shown more on hover */}
           <motion.p
-            className="text-xs sm:text-sm leading-relaxed text-foreground/80 max-w-xs mx-auto"
+            className="text-xs sm:text-sm leading-relaxed text-foreground/70 dark:text-foreground/80 max-w-xs mx-auto"
             style={{
-              textShadow: "0 1px 4px rgba(0,0,0,0.25)",
+              textShadow: expanded 
+                ? "0 1px 3px rgba(0,0,0,0.08)"
+                : "none",
             }}
             initial={false}
             animate={{
@@ -450,7 +473,7 @@ export function Showcase() {
           </div>
 
           {/* Orbs grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-16 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-16 md:gap-x-8 md:gap-y-24 relative z-10">
             {capabilities.map((capability, index) => (
               <CapabilityOrb
                 key={index}

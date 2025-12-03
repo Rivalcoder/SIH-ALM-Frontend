@@ -45,7 +45,7 @@ const uniqueFeatures = [
 
 export default function Lanyard3D() {
   return (
-    <section className="py-12 md:py-16 relative overflow-hidden">
+    <section className="pt-12 pb-6 md:pt-16 md:pb-8 relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -124,7 +124,7 @@ export default function Lanyard3D() {
         </div>
 
         {/* Infinite Moving Cards */}
-        <div className="h-[35rem] rounded-md flex flex-col antialiased items-center justify-center relative overflow-hidden">
+        <div className="h-[25rem] md:h-[28rem] rounded-md flex flex-col antialiased items-center justify-center relative overflow-hidden">
           <InfiniteMovingCards
             items={uniqueFeatures}
             direction="right"

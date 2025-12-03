@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export function ReadyToDive() {
   return (
-    <section className="w-full py-16 md:py-24 relative overflow-hidden">
+    <section className="w-full pt-16 pb-16 md:pt-24 md:pb-24 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-accent/5"></div>
       <motion.div

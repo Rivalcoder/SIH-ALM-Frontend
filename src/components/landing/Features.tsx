@@ -112,18 +112,18 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
       {/* Glass morphism card */}
       <motion.div
-        className="relative flex-1 glass-strong rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 border border-accent/20 group-hover:border-accent/40 transition-all duration-500"
+        className="relative flex-1 glass-strong rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 border border-accent/20 group-hover:border-accent/30 transition-all duration-700"
         animate={{
           boxShadow: isHovered
             ? [
-                "0 0 0px rgba(59, 130, 246, 0)",
-                `0 0 60px ${feature.glowColor}`,
-                "0 0 0px rgba(59, 130, 246, 0)",
+                `0 0 20px ${feature.glowColor}40`,
+                `0 0 40px ${feature.glowColor}60`,
+                `0 0 20px ${feature.glowColor}40`,
               ]
             : "0 0 0px rgba(59, 130, 246, 0)",
         }}
         transition={{
-          duration: 2,
+          duration: 3,
           repeat: Infinity,
           ease: "easeInOut",
         }}
@@ -154,7 +154,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         {/* Content */}
         <div className="relative z-10">
           <motion.h3
-            className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 text-foreground group-hover:text-accent transition-colors duration-300"
+            className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 text-foreground"
             initial={{ opacity: 0, x: isLeft ? -20 : 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -295,7 +295,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
 export function Features() {
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden">
+    <section className="py-24 md:py-32 pb-32 md:pb-40 relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
