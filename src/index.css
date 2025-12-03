@@ -150,6 +150,22 @@ All colors MUST be HSL.
     background-clip: text;
   }
 
+  /* Animated gradient text */
+  .text-gradient-animate {
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: text-gradient-animate 3s ease infinite;
+  }
+
+  /* Font headline */
+  .font-headline {
+    font-family: inherit;
+    font-weight: 700;
+  }
+
   /* Animated gradient background */
   .animated-gradient {
     background: linear-gradient(
@@ -191,6 +207,20 @@ All colors MUST be HSL.
     50% { 
       box-shadow: 0 0 40px hsl(var(--accent) / 0.5);
       transform: scale(1.02);
+    }
+  }
+
+  /* Fade in animation */
+  .fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 
