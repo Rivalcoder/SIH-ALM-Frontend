@@ -99,7 +99,7 @@ export default function Analyze() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="flex relative pt-16">
+      <div className="flex relative pt-16 min-h-[calc(100vh-4rem)]">
         {/* Sidebar - Merged with Navbar */}
         <AnimatePresence>
           {showSidebar && (
