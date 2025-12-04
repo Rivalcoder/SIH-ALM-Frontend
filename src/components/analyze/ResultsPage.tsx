@@ -104,13 +104,18 @@ export function ResultsPage({
     const handleScroll = () => {
       const currentScrollY = contentElement.scrollTop;
       
-      // Show header and nav when at top (within 100px) or scrolling up
-      if (currentScrollY < 100 || currentScrollY < lastScrollY) {
+      // Show header and nav only when at the very top (within 10px threshold)
+      if (currentScrollY <= 10) {
         setIsHeaderVisible(true);
         setIsNavVisible(true);
       } 
-      // Hide header and nav when scrolling down past threshold
-      else if (currentScrollY > lastScrollY && currentScrollY > 150) {
+      // Hide header and nav on any scroll down (even slight scroll)
+      else if (currentScrollY > lastScrollY) {
+        setIsHeaderVisible(false);
+        setIsNavVisible(false);
+      }
+      // Keep hidden when scrolling up but not at top
+      else if (currentScrollY > 10) {
         setIsHeaderVisible(false);
         setIsNavVisible(false);
       }
