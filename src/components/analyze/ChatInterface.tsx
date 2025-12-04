@@ -50,7 +50,7 @@ export function ChatInterface({ messages, isLoading, onSubmit }: ChatInterfacePr
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className="w-full"
     >
-      <Card className="border-0 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-2xl max-h-[calc(100vh-280px)] min-h-[500px] flex flex-col w-full">
+      <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 max-h-[calc(100vh-280px)] min-h-[500px] flex flex-col w-full">
         {/* Header */}
         <div className="px-6 py-5 border-b border-border/50 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5">
           <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export function ChatInterface({ messages, isLoading, onSubmit }: ChatInterfacePr
                     className={`max-w-[75%] rounded-2xl p-4 shadow-lg ${
                       message.role === "user"
                         ? "bg-gradient-to-br from-blue-500 to-purple-500 text-white"
-                        : "bg-card border border-border/50 backdrop-blur-sm"
+                        : "bg-white dark:bg-card border-2 border-gray-200 dark:border-border/50 backdrop-blur-sm"
                     }`}
                     whileHover={{ scale: 1.02 }}
                   >
@@ -151,7 +151,7 @@ export function ChatInterface({ messages, isLoading, onSubmit }: ChatInterfacePr
               <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-pink-500/30 flex items-center justify-center shrink-0">
                 <BotMessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="bg-card border border-border/50 rounded-2xl p-4 backdrop-blur-sm">
+              <div className="bg-white dark:bg-card border-2 border-gray-200 dark:border-border/50 rounded-2xl p-4 backdrop-blur-sm">
                 <div className="flex items-center gap-2">
                   <Loader className="h-4 w-4 animate-spin text-accent" />
                   <span className="text-sm text-muted-foreground">Thinking...</span>

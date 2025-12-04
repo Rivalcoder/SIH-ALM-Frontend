@@ -50,7 +50,7 @@ export function TranscriptView({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <Card className="border-0 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-2xl">
+      <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
             <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export function TranscriptView({
               className="relative"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 rounded-xl blur-xl" />
-              <div className="relative bg-muted/30 backdrop-blur-sm p-6 rounded-xl border border-border/50">
+              <div className="relative bg-gray-50 dark:bg-muted/30 backdrop-blur-sm p-6 rounded-xl border border-gray-200 dark:border-border/50">
                 <p className="text-base leading-relaxed whitespace-pre-wrap text-foreground/90 font-medium">
                   {transcriptContent}
                 </p>

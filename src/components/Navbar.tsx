@@ -3,18 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Menu, X, Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-
-  const isHomePage = pathname === "/";
+  
+  // Check if we're on analyze/results page
+  const isAnalyzePage = pathname === "/analyze" || pathname?.includes("/analyze");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,79 +27,99 @@ export function Navbar() {
 
   return (
     <motion.nav
-      initial={{ backdropFilter: "blur(0px)", backgroundColor: "transparent" }}
+      initial={{ backdropFilter: "blur(0px)" }}
       animate={{
-        backdropFilter: scrolled ? "blur(16px)" : "blur(0px)",
-        backgroundColor: scrolled 
-          ? "hsl(var(--background) / 0.8)" 
-          : "transparent",
-        borderBottomWidth: scrolled ? "1px" : "0px",
-        boxShadow: scrolled ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+        backdropFilter: isAnalyzePage 
+          ? (scrolled ? "blur(10px)" : "blur(6px)")
+          : (scrolled ? "blur(16px)" : "blur(8px)"),
+        backgroundColor: isAnalyzePage
+          ? (scrolled ? "hsl(var(--background) / 0.4)" : "hsl(var(--background) / 0.1)")
+          : (scrolled ? "hsl(var(--background) / 0.9)" : "hsl(var(--background) / 0.7)"),
+        borderBottomWidth: isAnalyzePage ? "0px" : "1px",
       }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="fixed top-0 left-0 right-0 z-50 border-b border-border/50"
+      className={`fixed top-0 left-0 right-0 z-50 ${isAnalyzePage ? "border-0" : "border-b border-border/50"}`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 md:h-18 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <motion.div
-              className="relative"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <div className="absolute inset-0 blur-lg bg-accent/30 group-hover:bg-accent/50 transition-all rounded-full" />
-              <Waves className="h-8 w-8 text-accent transition-transform relative z-10" />
-            </motion.div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo - Clean and professional */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative flex items-center justify-center">
+              {!isAnalyzePage && (
+                <div className="absolute inset-0 rounded-lg blur-sm transition-all duration-300 bg-accent/10 group-hover:bg-accent/15" />
+              )}
+              <Waves className={`h-7 w-7 text-accent relative z-10 transition-transform group-hover:scale-110 duration-300 ${
+                isAnalyzePage ? "opacity-90" : ""
+              }`} />
+            </div>
+            <span className={`text-lg md:text-xl font-bold ${
+              isAnalyzePage ? "text-foreground/90" : "gradient-text"
+            }`}>
               ALM-Asia
             </span>
           </Link>
 
-          {/* Desktop Navigation removed as per latest design */}
-
           {/* Right side buttons */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center gap-2">
             <ThemeToggle />
             <Link href="/signin">
               <Button 
                 variant="ghost" 
-                className="hover:bg-accent/10 transition-all relative z-10 overflow-visible"
+                size="sm"
+                className={`transition-colors ${
+                  isAnalyzePage 
+                    ? "hover:bg-accent/5 text-foreground/80 hover:text-foreground" 
+                    : "hover:bg-accent/10"
+                }`}
               >
-                <span className="relative z-20 text-foreground">Sign In</span>
+                Sign In
               </Button>
             </Link>
             <Link href="/signup">
-              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 transition-all">
+              <Button 
+                size="sm"
+                className={`transition-all ${
+                  isAnalyzePage
+                    ? "bg-accent/70 hover:bg-accent/85 text-accent-foreground shadow-sm hover:shadow-md backdrop-blur-sm border border-accent/20"
+                    : "bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm hover:shadow-md"
+                }`}
+              >
                 Get Started
               </Button>
             </Link>
           </div>
 
-          {/* Mobile menu button (only for auth + theme) */}
-          <div className="flex md:hidden items-center space-x-2">
+          {/* Mobile menu button */}
+          <div className="flex md:hidden items-center gap-2">
             <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="rounded-full"
+              className={`h-9 w-9 ${
+                isAnalyzePage ? "hover:bg-accent/5" : ""
+              }`}
             >
               {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5 w-5" />
               )}
             </Button>
           </div>
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border/50 py-4 space-y-2 fade-in-up">
-            <div className="flex flex-col space-y-2">
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t border-border/50 overflow-hidden"
+          >
+            <div className="py-3 space-y-2">
               <Link href="/signin" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="ghost" className="w-full hover:bg-accent/10 relative z-10 overflow-visible">
-                  <span className="relative z-20 text-foreground">Sign In</span>
+                <Button variant="ghost" className="w-full justify-start hover:bg-accent/10">
+                  Sign In
                 </Button>
               </Link>
               <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
@@ -108,7 +128,7 @@ export function Navbar() {
                 </Button>
               </Link>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </motion.nav>

@@ -32,7 +32,7 @@ export function ChartCard({
       whileHover={{ scale: 1.01, y: -5 }}
       className={className}
     >
-      <Card className="border-0 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-2xl overflow-hidden group">
+      <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
         {/* Animated gradient background */}
         <motion.div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20"

@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
@@ -11,7 +10,6 @@ interface StatCardProps {
   icon: LucideIcon;
   description: string;
   index?: number;
-  gradient?: string;
 }
 
 export function StatCard({
@@ -20,59 +18,38 @@ export function StatCard({
   icon: Icon,
   description,
   index = 0,
-  gradient = "from-blue-500/30 via-purple-500/20 to-pink-500/30",
 }: StatCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: 0.6,
+        duration: 0.5,
         delay: index * 0.1,
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
+        ease: [0.16, 1, 0.3, 1],
       }}
-      whileHover={{ scale: 1.03, y: -8 }}
+      whileHover={{ y: -4 }}
       className="h-full"
     >
-      <Card className="relative h-full overflow-hidden border-0 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-xl shadow-xl group">
-        {/* Animated gradient background */}
-        <motion.div
-          className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl", `bg-gradient-to-br ${gradient}`)}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0, 0.3, 0],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        
-        {/* Glowing border effect */}
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/0 via-purple-500/20 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <Card className="relative h-full overflow-hidden border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 group">
+        {/* Subtle accent gradient on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         <div className="relative z-10">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
               {title}
             </CardTitle>
-            <motion.div
-              className="p-3 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 backdrop-blur-sm"
-              whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Icon className="h-5 w-5 text-accent" />
-            </motion.div>
+            <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 group-hover:bg-accent/15 transition-colors duration-300">
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-1">
             <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 + 0.3, type: "spring", stiffness: 200 }}
-              className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground/80 to-foreground/60 bg-clip-text text-transparent"
+              transition={{ delay: index * 0.1 + 0.2, duration: 0.4 }}
+              className="text-3xl sm:text-4xl font-bold text-foreground"
             >
               {value}
             </motion.div>

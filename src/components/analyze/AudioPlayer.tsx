@@ -52,7 +52,7 @@ export function AudioPlayer({ selectedFile, audioUrl, duration }: AudioPlayerPro
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="border-0 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
         <CardContent className="p-6">
           <div className="flex items-center gap-6">
             {/* Play Button */}
@@ -104,7 +104,7 @@ export function AudioPlayer({ selectedFile, audioUrl, duration }: AudioPlayerPro
               </div>
 
               {/* Progress Bar */}
-              <div className="relative h-2 bg-muted/50 rounded-full overflow-hidden">
+              <div className="relative h-2 bg-gray-200 dark:bg-muted/50 rounded-full overflow-hidden">
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
                   initial={{ width: 0 }}
@@ -127,7 +127,7 @@ export function AudioPlayer({ selectedFile, audioUrl, duration }: AudioPlayerPro
             </div>
 
             {/* Visualizer */}
-            <div className="hidden md:flex items-center gap-1 h-12 px-3 bg-muted/30 rounded-xl">
+            <div className="hidden md:flex items-center gap-1 h-12 px-3 bg-gray-100 dark:bg-muted/30 rounded-xl">
               {[...Array(20)].map((_, i) => (
                 <motion.div
                   key={i}

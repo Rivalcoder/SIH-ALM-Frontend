@@ -11,6 +11,7 @@ import { DatasetSample } from "@/lib/datasetSamples";
 import { ChatMessage, AnalysisHistory } from "@/lib/analyzeTypes";
 import { UploadPage } from "@/components/analyze/UploadPage";
 import { ResultsPage } from "@/components/analyze/ResultsPage";
+import { cn } from "@/lib/utils";
 import {
   History,
   X,
@@ -96,10 +97,10 @@ export default function Analyze() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full bg-background">
       <Navbar />
       
-      <div className="flex relative pt-16 min-h-[calc(100vh-4rem)]">
+      <div className="relative pt-16 w-full">
         {/* Sidebar - Merged with Navbar */}
         <AnimatePresence>
           {showSidebar && (
@@ -117,7 +118,7 @@ export default function Analyze() {
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-80 max-w-[85vw] bg-card border-r border-border z-30 overflow-hidden shrink-0 lg:relative lg:top-0 lg:z-auto lg:max-w-none"
+                className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-80 max-w-[85vw] bg-card border-r border-border z-30 overflow-hidden shrink-0 lg:relative lg:top-0 lg:z-auto lg:max-w-none lg:h-screen"
               >
                 <div className="h-full flex flex-col">
                   <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">

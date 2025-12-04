@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Waves } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { ChatMessage } from "@/lib/analyzeTypes";
 import { useToast } from "@/hooks/use-toast";
-import { SplittingText } from "@/components/ui/splitting-text";
 import { ResultsNavigation } from "./ResultsNavigation";
 import { AudioPlayer } from "./AudioPlayer";
 import { TranscriptView } from "./TranscriptView";
@@ -79,10 +78,31 @@ export function ResultsPage({
     setChatMessages(initialChatMessages);
   }, [initialChatMessages]);
 
-  // Hide header and navigation on scroll down, show on scroll up
+  // Handle scroll for content area only (not window scroll)
+  const contentRef = useRef<HTMLDivElement>(null);
+  const headerNavRef = useRef<HTMLDivElement>(null);
+  const [headerNavHeight, setHeaderNavHeight] = useState(320);
+  
+  // Measure header+nav height
   useEffect(() => {
+    const updateHeight = () => {
+      if (headerNavRef.current) {
+        const height = headerNavRef.current.offsetHeight;
+        setHeaderNavHeight(height);
+      }
+    };
+    
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, [isHeaderVisible, isNavVisible]);
+  
+  useEffect(() => {
+    const contentElement = contentRef.current;
+    if (!contentElement) return;
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      const currentScrollY = contentElement.scrollTop;
       
       // Show header and nav when at top (within 100px) or scrolling up
       if (currentScrollY < 100 || currentScrollY < lastScrollY) {
@@ -98,21 +118,15 @@ export function ResultsPage({
       setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    contentElement.addEventListener("scroll", handleScroll, { passive: true });
+    return () => contentElement.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // Show header and nav when tab changes, but don't auto-scroll for chat tab
+  // Show header and nav when tab changes
   useEffect(() => {
     // Show header and nav when switching tabs
     setIsHeaderVisible(true);
     setIsNavVisible(true);
-    // Only scroll to top for non-chat tabs to show navigation
-    if (activeTab !== "chat") {
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 100);
-    }
   }, [activeTab]);
 
   const handleLanguageChange = async (lang: string) => {
@@ -204,94 +218,160 @@ export function ResultsPage({
   if (!currentAnalysis) return null;
 
   return (
-    <div className="flex-1 min-w-0 relative flex flex-col w-full overflow-x-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/5" />
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
+    <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+      {/* Premium Animated Background - Matching landing page style */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        {/* Animated gradient background */}
+        <div 
+          className="absolute inset-0 animated-gradient"
+          style={{
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
           }}
         />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-rose-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -40, 0],
-            y: [0, -20, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-        />
+        
+        {/* Mesh gradient orbs - Landing page style */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Top left orb */}
+          <motion.div
+            className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-3xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent)',
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden',
+              willChange: 'transform, opacity',
+            }}
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+              x: [-30, 30, -30],
+              y: [-30, 30, -30],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          
+          {/* Bottom right orb */}
+          <motion.div
+            className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-3xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.4), transparent)',
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden',
+              willChange: 'transform, opacity',
+            }}
+            animate={{
+              scale: [1.2, 1, 1.2],
+              opacity: [0.3, 0.5, 0.3],
+              x: [30, -30, 30],
+              y: [30, -30, 30],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+          />
+          
+          {/* Center orb */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent)',
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden',
+              willChange: 'transform, opacity',
+            }}
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
+          />
+        </div>
+
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]">
+          <div 
+            className="w-full h-full"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: "50px 50px",
+            }}
+          />
+        </div>
       </div>
 
-      {/* Header & Navigation - Fixed below main navbar at top-16 (64px) */}
-      <div className="fixed top-16 left-0 right-0 z-[45] pointer-events-none">
-        {/* Animated Gradient Background */}
-        <div className="absolute inset-0 animated-gradient opacity-50 pointer-events-none" />
-        
-        {/* Header Section - Hides on scroll down */}
+      {/* Premium Header Section - Glass morphism with smooth animations */}
+      <div ref={headerNavRef} className="absolute top-0 left-0 right-0 z-[45] pointer-events-none">
+        {/* Header Section */}
         <motion.div
-          className="relative w-full bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-lg pointer-events-auto"
+          className="relative w-full shadow-lg pointer-events-auto"
           animate={{
             y: isHeaderVisible ? 0 : "-100%",
             opacity: isHeaderVisible ? 1 : 0,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
+          style={{
+            backgroundColor: "hsl(var(--background) / 0.95)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderBottom: "none",
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+          }}
         >
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-6">
-            {/* Centered Title with SplittingText Animation */}
-            <div className="text-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+            <div className="text-center space-y-5">
+              {/* Premium Badge */}
               <motion.div
-                className="inline-block mb-2"
-                animate={{
-                  rotate: [0, 360],
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{
-                  rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                  scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-block"
               >
-                <div className="relative inline-block">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/40 via-purple-500/40 to-pink-500/40 rounded-full blur-xl" />
-                  <Sparkles className="relative h-8 w-8 md:h-10 md:w-10 text-accent mx-auto" />
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 border border-accent/20 backdrop-blur-sm">
+                  <Waves className="h-4 w-4 text-accent animate-pulse" />
+                  <span className="text-xs font-semibold text-accent tracking-wide">AUDIO INTELLIGENCE</span>
                 </div>
               </motion.div>
               
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                <span className="gradient-text inline-block">
-                  <SplittingText
-                    text="Analysis Report"
-                    type="words"
-                    inView={true}
-                    inViewOnce={false}
-                    motionVariants={{
-                      initial: { opacity: 0, y: 30, scale: 0.9 },
-                      animate: { opacity: 1, y: 0, scale: 1 },
-                      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
-                      stagger: 0.15
-                    }}
-                  />
-                </span>
-              </h1>
+              {/* Main Title with Gradient */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-2"
+              >
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+                  <span className="gradient-text">Analysis Report</span>
+                </h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto"
+                >
+                  Comprehensive insights from your audio analysis
+                </motion.p>
+              </motion.div>
             </div>
           </div>
         </motion.div>
 
-        {/* Navigation Section - Hides on scroll down */}
+        {/* Navigation Section - Premium design */}
         <motion.div
           className="pointer-events-auto"
           animate={{
@@ -299,6 +379,12 @@ export function ResultsPage({
             opacity: isNavVisible ? 1 : 0,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
+          style={{
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+            border: 'none',
+            boxShadow: 'none',
+          }}
         >
           <ResultsNavigation
             activeTab={activeTab}
@@ -309,13 +395,16 @@ export function ResultsPage({
         </motion.div>
       </div>
 
-      {/* Spacer to prevent content from going under fixed header & navigation */}
-      {/* Header: ~140-200px (when visible) + Navigation: 64px = ~204-264px total */}
-      <div className="h-[200px] sm:h-[220px] md:h-[240px] lg:h-[260px]" />
-
-      {/* Main Content */}
-      <main className="relative pb-12 flex-1 w-full overflow-visible">
-        <div className="w-full px-4 sm:px-6 lg:px-8 pt-4">
+      {/* Main Content Area - Scrollable container */}
+      <main 
+        ref={contentRef}
+        className="relative w-full flex-1 overflow-y-auto"
+        style={{ 
+          paddingTop: `${headerNavHeight}px`,
+          scrollBehavior: 'smooth'
+        }}
+      >
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-32">
           <AnimatePresence mode="wait">
             {activeTab === "overview" && (
               <motion.div
@@ -323,7 +412,11 @@ export function ResultsPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                }}
               >
                 <OverviewTab analysis={currentAnalysis} />
               </motion.div>
@@ -335,15 +428,25 @@ export function ResultsPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="space-y-6"
+                style={{
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                }}
               >
                 {selectedFile && audioUrl && (
-                  <AudioPlayer
-                    selectedFile={selectedFile}
-                    audioUrl={audioUrl}
-                    duration={currentAnalysis.duration}
-                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    <AudioPlayer
+                      selectedFile={selectedFile}
+                      audioUrl={audioUrl}
+                      duration={currentAnalysis.duration}
+                    />
+                  </motion.div>
                 )}
                 <TranscriptView
                   analysis={currentAnalysis}
@@ -354,16 +457,20 @@ export function ResultsPage({
                   onLanguageChange={handleLanguageChange}
                   onDiarizationToggle={setShowDiarization}
                 />
-                  </motion.div>
-                )}
+              </motion.div>
+            )}
 
             {activeTab === "insights" && (
-                <motion.div
+              <motion.div
                 key="insights"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                }}
               >
                 <InsightsTab analysis={currentAnalysis} />
               </motion.div>
@@ -375,8 +482,12 @@ export function ResultsPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full"
+                style={{
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                }}
               >
                 <VisualizationsTab analysis={currentAnalysis} />
               </motion.div>
@@ -388,8 +499,12 @@ export function ResultsPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full"
+                style={{
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                }}
               >
                 <ChatInterface
                   messages={chatMessages}
@@ -398,7 +513,7 @@ export function ResultsPage({
                 />
               </motion.div>
             )}
-                          </AnimatePresence>
+          </AnimatePresence>
         </div>
       </main>
     </div>

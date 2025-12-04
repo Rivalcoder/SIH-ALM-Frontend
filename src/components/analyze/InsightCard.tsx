@@ -35,7 +35,7 @@ export function InsightCard({
       whileHover={{ scale: 1.02, y: -5 }}
       className="h-full"
     >
-      <Card className="relative h-full overflow-hidden border-0 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-xl group">
+      <Card className="relative h-full overflow-hidden border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 group">
         {/* Animated gradient background */}
         <motion.div
           className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl", `bg-gradient-to-br ${gradient}`)}
@@ -71,7 +71,7 @@ export function InsightCard({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 + idx * 0.05 }}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border-l-4 border-accent/30"
+                    className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-muted/30 hover:bg-gray-100 dark:hover:bg-muted/50 transition-colors border-l-4 border-accent/30"
                   >
                     <div className="h-1.5 w-1.5 rounded-full bg-accent mt-2 shrink-0" />
                     <span className="text-sm text-foreground/80 leading-relaxed">{item}</span>
