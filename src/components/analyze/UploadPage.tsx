@@ -247,7 +247,14 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
               <p className="text-xl text-foreground/80 max-w-2xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                 Select an audio file for analysis and get instant insights powered by advanced AI technology.
               </p>
-              <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent rounded-full mx-auto animate-underline-grow" style={{ animationDelay: '300ms' }}></div>
+              <div 
+                className="h-1 bg-gradient-to-r from-primary to-accent rounded-full mx-auto" 
+                style={{ 
+                  animationDelay: '300ms',
+                  animation: 'underline-grow 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                  width: '0px'
+                }}
+              ></div>
             </div>
 
             {/* Upload Section */}

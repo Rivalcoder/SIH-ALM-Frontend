@@ -2,16 +2,32 @@
 
 import { ArrowRight, BookOpen } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import { SplittingText } from "@/components/ui/splitting-text";
 import { AudioVisualization } from "@/components/landing/AudioVisualization";
-import HeroVisual from "@/components/landing/HeroVisual";
+
+// Lazy load HeroVisual to improve initial page load
+const HeroVisual = dynamic(() => import("@/components/landing/HeroVisual"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full aspect-[7/4] md:aspect-[5/4] flex items-center justify-center">
+      <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 via-accent/20 to-primary/20 animate-pulse" />
+    </div>
+  ),
+});
 
 export function Hero() {
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section 
+      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
+      style={{
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+      }}
+    >
       {/* Retro Grid Background - Infinite perspective scrolling */}
       <RetroGrid 
         angle={65}
@@ -23,13 +39,41 @@ export function Hero() {
       />
       
       {/* Animated background */}
-      <div className="absolute inset-0 animated-gradient z-[2]" />
+      <div 
+        className="absolute inset-0 animated-gradient z-[2]"
+        style={{
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          willChange: 'background-position',
+        }}
+      />
       
       {/* Floating blob */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl float z-[3]" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl float z-[3]" style={{ animationDelay: '3s' }} />
+      <div 
+        className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl float z-[3]"
+        style={{
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          willChange: 'transform',
+        }}
+      />
+      <div 
+        className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl float z-[3]"
+        style={{
+          animationDelay: '3s',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          willChange: 'transform',
+        }}
+      />
 
-      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+      <div 
+        className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8"
+        style={{
+          transform: 'translateZ(0)',
+          isolation: 'isolate',
+        }}
+      >
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Side - Text Content */}
           <div className="text-center lg:text-left space-y-8">
@@ -112,7 +156,14 @@ export function Hero() {
           </div>
 
           {/* Right Side - SVG Animation with floating chips */}
-          <div className="hidden lg:flex flex-col items-center justify-center">
+          <div 
+            className="hidden lg:flex flex-col items-center justify-center"
+            style={{
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden',
+              isolation: 'isolate',
+            }}
+          >
             <HeroVisual />
           </div>
 

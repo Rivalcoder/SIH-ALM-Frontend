@@ -287,14 +287,17 @@ All colors MUST be HSL.
     left: 100%;
   }
 
-  /* Retro Grid Animation */
+  /* Retro Grid Animation - optimized for Linux */
   @keyframes grid {
-    0% { transform: translateY(-50%); }
-    100% { transform: translateY(0); }
+    0% { transform: translate3d(0, -50%, 0); }
+    100% { transform: translate3d(0, 0, 0); }
   }
 
   .animate-grid {
     animation: grid 15s linear infinite;
+    transform: translateZ(0);
+    backfaceVisibility: hidden;
+    willChange: transform;
   }
 
   /* Audio Waveform Animation */
@@ -345,5 +348,42 @@ All colors MUST be HSL.
 
   .animate-scroll {
     animation: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+  }
+
+  /* Linux rendering optimizations - prevent blinking/flickering */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backfaceVisibility: hidden;
+    perspective: 1000px;
+    will-change: transform;
+  }
+
+  .render-optimized {
+    contain: layout style paint;
+    isolation: isolate;
+    transform: translateZ(0);
+    backfaceVisibility: hidden;
+  }
+
+  /* Optimize blur effects for Linux */
+  .blur-optimized {
+    transform: translateZ(0);
+    backfaceVisibility: hidden;
+    will-change: transform, opacity;
+  }
+
+  /* Underline grow animation - expands once and stays */
+  @keyframes underline-grow {
+    0% {
+      width: 0px;
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      width: 96px;
+      opacity: 1;
+    }
   }
 }
