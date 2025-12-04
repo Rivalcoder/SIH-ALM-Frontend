@@ -6,6 +6,7 @@ import { Sparkles, Waves } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { ChatMessage } from "@/lib/analyzeTypes";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { ResultsNavigation } from "./ResultsNavigation";
 import { AudioPlayer } from "./AudioPlayer";
 import { TranscriptView } from "./TranscriptView";
@@ -72,6 +73,7 @@ export function ResultsPage({
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isChatScrolling, setIsChatScrolling] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -403,13 +405,19 @@ export function ResultsPage({
       {/* Main Content Area - Scrollable container */}
       <main 
         ref={contentRef}
-        className="relative w-full flex-1 overflow-y-auto"
+        className={cn(
+          "relative w-full flex-1",
+          activeTab === "chat" && isChatScrolling ? "overflow-hidden" : "overflow-y-auto"
+        )}
         style={{ 
-          paddingTop: `${headerNavHeight}px`,
+          paddingTop: activeTab === "chat" && isChatScrolling ? '0' : `${headerNavHeight}px`,
           scrollBehavior: 'smooth'
         }}
       >
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-32">
+        <div className={cn(
+          "w-full mx-auto",
+          activeTab === "chat" ? "px-0" : "pt-6 pb-32 max-w-7xl px-4 sm:px-6 lg:px-8"
+        )}>
           <AnimatePresence mode="wait">
             {activeTab === "overview" && (
               <motion.div
@@ -505,16 +513,23 @@ export function ResultsPage({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full"
+                className={cn(
+                  "w-full flex flex-col px-4 sm:px-6 lg:px-8 transition-all duration-300",
+                  isChatScrolling ? "h-full py-0" : "h-auto py-6"
+                )}
                 style={{
                   transform: 'translateZ(0)',
                   backfaceVisibility: 'hidden',
+                  height: isChatScrolling ? 'calc(100vh - 4rem)' : 'auto',
+                  minHeight: isChatScrolling ? 'calc(100vh - 4rem)' : 'auto',
+                  marginTop: isChatScrolling ? `-${headerNavHeight}px` : '0',
                 }}
               >
                 <ChatInterface
                   messages={chatMessages}
                   isLoading={isChatLoading}
                   onSubmit={handleChatSubmit}
+                  onScrollChange={setIsChatScrolling}
                 />
               </motion.div>
             )}
