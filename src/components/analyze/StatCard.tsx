@@ -12,6 +12,13 @@ interface StatCardProps {
   index?: number;
 }
 
+const cardColors = [
+  { iconBg: "bg-blue-100 dark:bg-blue-900/30", iconColor: "text-blue-600 dark:text-blue-400", iconBorder: "border-blue-500" },
+  { iconBg: "bg-emerald-100 dark:bg-emerald-900/30", iconColor: "text-emerald-600 dark:text-emerald-400", iconBorder: "border-emerald-500" },
+  { iconBg: "bg-purple-100 dark:bg-purple-900/30", iconColor: "text-purple-600 dark:text-purple-400", iconBorder: "border-purple-500" },
+  { iconBg: "bg-orange-100 dark:bg-orange-900/30", iconColor: "text-orange-600 dark:text-orange-400", iconBorder: "border-orange-500" },
+];
+
 export function StatCard({
   title,
   value,
@@ -19,6 +26,8 @@ export function StatCard({
   description,
   index = 0,
 }: StatCardProps) {
+  const colors = cardColors[index % cardColors.length];
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -28,20 +37,16 @@ export function StatCard({
         delay: index * 0.1,
         ease: [0.16, 1, 0.3, 1],
       }}
-      whileHover={{ y: -4 }}
       className="h-full"
     >
-      <Card className="relative h-full overflow-hidden border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 group">
-        {/* Subtle accent gradient on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
+      <Card className="relative h-full overflow-hidden border border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-sm shadow-xl">
         <div className="relative z-10">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
               {title}
             </CardTitle>
-            <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 group-hover:bg-accent/15 transition-colors duration-300">
-              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+            <div className={`p-2 rounded-lg ${colors.iconBg} border ${colors.iconBorder}`}>
+              <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${colors.iconColor}`} />
             </div>
           </CardHeader>
           <CardContent className="space-y-1">

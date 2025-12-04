@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { ChartCard } from "../ChartCard";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { DatasetSample } from "@/lib/datasetSamples";
 
 interface VisualizationsTabProps {
@@ -40,13 +40,6 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
         <div className="h-64 w-full bg-transparent">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={audioMetrics} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-              <defs>
-                <linearGradient id="audioMetricsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
               <XAxis
                 dataKey="name"
                 stroke="hsl(var(--foreground))"
@@ -71,9 +64,18 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
               />
               <Bar
                 dataKey="value"
-                fill="url(#audioMetricsGradient)"
                 radius={[8, 8, 0, 0]}
-              />
+              >
+                {audioMetrics.map((entry, index) => {
+                  const colors = ["#8b5cf6", "#ec4899", "#06b6d4"];
+                  return (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={colors[index % colors.length]}
+                    />
+                  );
+                })}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -87,13 +89,6 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
         <div className="h-64 w-full bg-transparent">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={speakerData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-              <defs>
-                <linearGradient id="speakerDurationGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.8} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
               <XAxis
                 dataKey="name"
                 stroke="hsl(var(--foreground))"
@@ -118,9 +113,18 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
               />
               <Bar
                 dataKey="duration"
-                fill="url(#speakerDurationGradient)"
                 radius={[8, 8, 0, 0]}
-              />
+              >
+                {speakerData.map((entry, index) => {
+                  const colors = ["#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"];
+                  return (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={colors[index % colors.length]}
+                    />
+                  );
+                })}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

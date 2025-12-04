@@ -52,16 +52,16 @@ export function AudioPlayer({ selectedFile, audioUrl, duration }: AudioPlayerPro
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
+      <Card className="border border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl overflow-hidden">
         <CardContent className="p-6">
           <div className="flex items-center gap-6">
             {/* Play Button */}
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileTap={{ scale: 0.95 }}>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={togglePlay}
-                className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 hover:from-blue-500/30 hover:via-purple-500/30 hover:to-pink-500/30 border border-accent/20 shadow-lg"
+                className="h-16 w-16 rounded-2xl bg-green-100 dark:bg-green-900/30 border-2 border-green-500 shadow-lg"
               >
                 <AnimatePresence mode="wait">
                   {isPlaying ? (
@@ -72,7 +72,7 @@ export function AudioPlayer({ selectedFile, audioUrl, duration }: AudioPlayerPro
                       exit={{ scale: 0, rotate: 90 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Pause className="h-6 w-6 text-accent fill-accent" />
+                      <Pause className="h-6 w-6 text-green-600 dark:text-green-400 fill-green-600 dark:fill-green-400" />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -82,7 +82,7 @@ export function AudioPlayer({ selectedFile, audioUrl, duration }: AudioPlayerPro
                       exit={{ scale: 0, rotate: -90 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Play className="h-6 w-6 text-accent fill-accent ml-1" />
+                      <Play className="h-6 w-6 text-green-600 dark:text-green-400 fill-green-600 dark:fill-green-400 ml-1" />
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -29,33 +29,15 @@ export function ChartCard({
         type: "spring",
         stiffness: 100,
       }}
-      whileHover={{ scale: 1.01, y: -5 }}
       className={className}
     >
-      <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
-        {/* Animated gradient background */}
-        <motion.div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20"
-          animate={{
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
+      <Card className="border border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl overflow-hidden">
         <div className="relative z-10 bg-transparent">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3">
-              <motion.div
-                className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20"
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              >
-                <Sparkles className="h-5 w-5 text-accent" />
-              </motion.div>
+              <div className={`p-2 rounded-lg ${index === 0 ? 'bg-violet-100 dark:bg-violet-900/30 border border-violet-500' : 'bg-amber-100 dark:bg-amber-900/30 border border-amber-500'}`}>
+                <Sparkles className={`h-5 w-5 ${index === 0 ? 'text-violet-600 dark:text-violet-400' : 'text-amber-600 dark:text-amber-400'}`} />
+              </div>
               <span className="text-xl font-bold">{title}</span>
             </CardTitle>
             <CardDescription className="text-sm">{description}</CardDescription>

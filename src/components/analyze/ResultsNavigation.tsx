@@ -55,8 +55,8 @@ export function ResultsNavigation({
                   "relative px-6 py-2.5 text-sm font-medium rounded-lg whitespace-nowrap",
                   "transition-all duration-300 ease-out",
                   activeTab === tab.id
-                    ? "text-foreground pb-3"
-                    : "text-muted-foreground"
+                    ? "text-gray-900 dark:text-foreground pb-3"
+                    : "text-gray-900 dark:text-muted-foreground"
                 )}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -67,7 +67,6 @@ export function ResultsNavigation({
                 }}
                 whileHover={{ 
                   scale: 1.05,
-                  color: "hsl(var(--foreground))",
                 }}
                 whileTap={{ scale: 0.97 }}
                 style={{
@@ -119,7 +118,7 @@ export function ResultsNavigation({
                 )}
                 
                 {/* Text */}
-                <span className="relative z-10 flex items-center gap-2">
+                <span className="relative z-10 flex items-center gap-2 text-gray-900 dark:text-foreground">
                   {tab.label}
                   {activeTab === tab.id && (
                     <motion.div
@@ -169,8 +168,8 @@ export function ResultsNavigation({
                   "relative px-4 py-2 text-xs font-medium rounded-md whitespace-nowrap",
                   "transition-all duration-200",
                   activeTab === tab.id
-                    ? "text-foreground pb-2.5"
-                    : "text-muted-foreground"
+                    ? "text-gray-900 dark:text-foreground pb-2.5"
+                    : "text-gray-900 dark:text-muted-foreground"
                 )}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -220,7 +219,7 @@ export function ResultsNavigation({
                   />
                 )}
                 
-                <span className="relative z-10">{tab.label}</span>
+                <span className="relative z-10 text-gray-900 dark:text-foreground">{tab.label}</span>
                 
                 {/* Active indicator */}
                 {activeTab === tab.id && (

@@ -52,15 +52,12 @@ export function OverviewTab({ analysis }: OverviewTabProps) {
         transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="w-full"
       >
-        <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden relative group">
-          {/* Subtle accent gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
+        <Card className="border border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl overflow-hidden relative">
           <div className="relative z-10">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-accent/10 border border-accent/20">
-                  <Info className="h-5 w-5 text-accent" />
+                <div className="p-2.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-500">
+                  <Info className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <CardTitle className="text-xl sm:text-2xl font-bold">Analysis Summary</CardTitle>
               </div>

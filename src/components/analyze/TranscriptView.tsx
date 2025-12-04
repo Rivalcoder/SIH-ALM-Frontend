@@ -50,17 +50,13 @@ export function TranscriptView({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <Card className="border-2 border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300">
+      <Card className="border border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
             <div className="flex items-center gap-3">
-              <motion.div
-                className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20"
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Text className="h-6 w-6 text-accent" />
-              </motion.div>
+              <div className="p-3 rounded-xl bg-sky-100 dark:bg-sky-900/30 border border-sky-500">
+                <Text className="h-6 w-6 text-sky-600 dark:text-sky-400" />
+              </div>
               <div>
                 <CardTitle className="text-2xl font-bold">Transcript</CardTitle>
                 <CardDescription className="mt-1">
