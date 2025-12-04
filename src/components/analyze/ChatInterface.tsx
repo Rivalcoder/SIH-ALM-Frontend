@@ -223,7 +223,7 @@ export function ChatInterface({ messages, isLoading, onSubmit, onScrollChange }:
                     Start a Conversation
                   </h3>
                   <p className="text-sm text-muted-foreground max-w-md">
-                    Ask me anything about your audio analysis results. I'm here to help you understand the insights.
+                    Ask me anything about your audio analysis results. I&apos;m here to help you understand the insights.
                   </p>
                 </motion.div>
               ) : (
