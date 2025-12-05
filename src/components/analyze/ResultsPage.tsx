@@ -72,7 +72,7 @@ export function ResultsPage({
   const [showDiarization, setShowDiarization] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isNavVisible, setIsNavVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
   const [isChatScrolling, setIsChatScrolling] = useState(false);
   const { toast } = useToast();
 
@@ -103,31 +103,44 @@ export function ResultsPage({
     const contentElement = contentRef.current;
     if (!contentElement) return;
 
+    let rafId: number | null = null;
+    let lastHeaderState = { header: true, nav: true };
+    
     const handleScroll = () => {
-      const currentScrollY = contentElement.scrollTop;
+      if (rafId !== null) return;
       
-      // Show header and nav only when at the very top (within 10px threshold)
-      if (currentScrollY <= 10) {
-        setIsHeaderVisible(true);
-        setIsNavVisible(true);
-      } 
-      // Hide header and nav on any scroll down (even slight scroll)
-      else if (currentScrollY > lastScrollY) {
-        setIsHeaderVisible(false);
-        setIsNavVisible(false);
-      }
-      // Keep hidden when scrolling up but not at top
-      else if (currentScrollY > 10) {
-        setIsHeaderVisible(false);
-        setIsNavVisible(false);
-      }
-      
-      setLastScrollY(currentScrollY);
+      rafId = requestAnimationFrame(() => {
+        const currentScrollY = contentElement.scrollTop;
+        
+        // Only update state if it actually changed to avoid unnecessary re-renders
+        let newHeaderState = { header: false, nav: false };
+        
+        // Show header and nav only when at the very top (within 10px threshold)
+        if (currentScrollY <= 10) {
+          newHeaderState = { header: true, nav: true };
+        }
+        
+        // Only update state if changed
+        if (newHeaderState.header !== lastHeaderState.header || 
+            newHeaderState.nav !== lastHeaderState.nav) {
+          setIsHeaderVisible(newHeaderState.header);
+          setIsNavVisible(newHeaderState.nav);
+          lastHeaderState = newHeaderState;
+        }
+        
+        lastScrollYRef.current = currentScrollY;
+        rafId = null;
+      });
     };
 
     contentElement.addEventListener("scroll", handleScroll, { passive: true });
-    return () => contentElement.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      contentElement.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   // Show header and nav when tab changes
   useEffect(() => {
@@ -135,6 +148,48 @@ export function ResultsPage({
     setIsHeaderVisible(true);
     setIsNavVisible(true);
   }, [activeTab]);
+
+  // Lightweight scroll forwarding for nav area to ensure scroll works
+  useEffect(() => {
+    const headerNavElement = headerNavRef.current;
+    const contentElement = contentRef.current;
+    
+    if (!headerNavElement || !contentElement) return;
+
+    let rafId: number | null = null;
+    const handleWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Only forward if not over a button (buttons handle their own events)
+      if (target.tagName === 'BUTTON' || target.closest('button')) {
+        return;
+      }
+      
+      // Cancel any pending scroll update
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      
+      // Use requestAnimationFrame for smooth scrolling
+      rafId = requestAnimationFrame(() => {
+        const currentScroll = contentElement.scrollTop;
+        const newScroll = currentScroll + e.deltaY;
+        contentElement.scrollTop = newScroll;
+        rafId = null;
+      });
+      
+      e.preventDefault();
+    };
+
+    headerNavElement.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      headerNavElement.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   const handleLanguageChange = async (lang: string) => {
     setTargetLanguage(lang);
@@ -225,7 +280,7 @@ export function ResultsPage({
   if (!currentAnalysis) return null;
 
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+    <div className="relative w-full h-[calc(100vh-4rem)] flex flex-col" style={{ minHeight: 0, overflow: 'hidden' }}>
       {/* Premium Animated Background - Matching landing page style */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         {/* Animated gradient background */}
@@ -237,71 +292,25 @@ export function ResultsPage({
           }}
         />
         
-        {/* Mesh gradient orbs - Landing page style */}
+        {/* Simplified static gradient orbs - Performance optimized */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Top left orb */}
-          <motion.div
-            className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-3xl"
+          {/* Top left orb - Static with reduced blur */}
+          <div
+            className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full blur-2xl opacity-30"
             style={{
-              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent)',
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.25), transparent)',
               transform: 'translateZ(0)',
               backfaceVisibility: 'hidden',
-              willChange: 'transform, opacity',
-            }}
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-              x: [-30, 30, -30],
-              y: [-30, 30, -30],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut",
             }}
           />
           
-          {/* Bottom right orb */}
-          <motion.div
-            className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-3xl"
+          {/* Bottom right orb - Static with reduced blur */}
+          <div
+            className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-2xl opacity-30"
             style={{
-              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.4), transparent)',
+              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.25), transparent)',
               transform: 'translateZ(0)',
               backfaceVisibility: 'hidden',
-              willChange: 'transform, opacity',
-            }}
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.3, 0.5, 0.3],
-              x: [30, -30, 30],
-              y: [30, -30, 30],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2,
-            }}
-          />
-          
-          {/* Center orb */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent)',
-              transform: 'translateZ(0)',
-              backfaceVisibility: 'hidden',
-              willChange: 'transform, opacity',
-            }}
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.2, 0.4, 0.2],
-            }}
-            transition={{
-              duration: 15,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
             }}
           />
         </div>
@@ -322,22 +331,26 @@ export function ResultsPage({
       </div>
 
       {/* Premium Header Section - Glass morphism with smooth animations */}
-      <div ref={headerNavRef} className="absolute top-0 left-0 right-0 z-[45] pointer-events-none">
+      <div 
+        ref={headerNavRef} 
+        className="absolute top-0 left-0 right-0 z-[45]"
+      >
         {/* Header Section */}
         <motion.div
-          className="relative w-full shadow-lg pointer-events-auto"
+          className="relative w-full shadow-lg"
           animate={{
             y: isHeaderVisible ? 0 : "-100%",
             opacity: isHeaderVisible ? 1 : 0,
           }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
           style={{
-            backgroundColor: "hsl(var(--background) / 0.95)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
+            backgroundColor: "hsl(var(--background) / 0.98)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
             borderBottom: "none",
             transform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
+            willChange: 'transform, opacity',
           }}
         >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
@@ -380,17 +393,17 @@ export function ResultsPage({
 
         {/* Navigation Section - Premium design */}
         <motion.div
-          className="pointer-events-auto"
           animate={{
             y: isNavVisible ? 0 : "-100%",
             opacity: isNavVisible ? 1 : 0,
           }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
           style={{
             transform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
             border: 'none',
             boxShadow: 'none',
+            willChange: 'transform, opacity',
           }}
         >
           <ResultsNavigation
@@ -411,7 +424,13 @@ export function ResultsPage({
         )}
         style={{ 
           paddingTop: activeTab === "chat" && isChatScrolling ? '0' : `${headerNavHeight}px`,
-          scrollBehavior: 'smooth'
+          scrollBehavior: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          height: '100%',
+          minHeight: 0,
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
         }}
       >
         <div className={cn(

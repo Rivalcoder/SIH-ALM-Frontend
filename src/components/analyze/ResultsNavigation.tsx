@@ -28,22 +28,23 @@ export function ResultsNavigation({
     <motion.nav
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className="w-full relative"
       style={{
-        backgroundColor: "hsl(var(--background) / 0.95)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
+        backgroundColor: "hsl(var(--background) / 0.98)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
         border: "none",
         boxShadow: "none",
         transform: 'translateZ(0)',
         backfaceVisibility: 'hidden',
+        willChange: 'opacity',
       }}
     >
       {/* Subtle gradient shimmer */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex items-center justify-center h-14 md:h-16">
           {/* Tab Navigation - Desktop */}
           <div className="hidden md:flex items-center justify-center gap-2 flex-1">
@@ -53,22 +54,17 @@ export function ResultsNavigation({
                 onClick={() => onTabChange(tab.id)}
                 className={cn(
                   "relative px-6 py-2.5 text-sm font-medium rounded-lg whitespace-nowrap",
-                  "transition-all duration-300 ease-out",
+                  "transition-colors duration-200",
                   activeTab === tab.id
                     ? "text-gray-900 dark:text-foreground pb-3"
                     : "text-gray-900 dark:text-muted-foreground"
                 )}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  delay: index * 0.05,
-                  duration: 0.4,
-                  ease: [0.16, 1, 0.3, 1]
-                }}
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
                 whileHover={{ 
-                  scale: 1.05,
+                  scale: 1.02,
                 }}
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.98 }}
                 style={{
                   transform: 'translateZ(0)',
                   backfaceVisibility: 'hidden',
@@ -94,13 +90,13 @@ export function ResultsNavigation({
                     style={{
                       background: "linear-gradient(135deg, hsl(var(--accent) / 0.15), hsl(var(--accent) / 0.08))",
                       border: "1px solid hsl(var(--accent) / 0.3)",
-                      boxShadow: "0 0 20px hsl(var(--accent) / 0.2)",
+                      boxShadow: "0 0 12px hsl(var(--accent) / 0.15)",
                     }}
                     transition={{
                       type: "spring",
-                      stiffness: 300,
-                      damping: 30,
-                      mass: 0.8,
+                      stiffness: 400,
+                      damping: 35,
+                      mass: 0.5,
                     }}
                   />
                 )}
@@ -122,16 +118,11 @@ export function ResultsNavigation({
                   {tab.label}
                   {activeTab === tab.id && (
                     <motion.div
-                      initial={{ scale: 0, rotate: -180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 200,
-                        damping: 15,
-                      }}
+                      initial={{ scale: 1 }}
+                      animate={{ scale: 1 }}
                       className="w-1.5 h-1.5 rounded-full bg-accent"
                       style={{
-                        boxShadow: "0 0 8px hsl(var(--accent) / 0.8)",
+                        boxShadow: "0 0 6px hsl(var(--accent) / 0.6)",
                       }}
                     />
                   )}
@@ -144,13 +135,13 @@ export function ResultsNavigation({
                     className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full"
                     style={{
                       background: "linear-gradient(90deg, hsl(var(--accent)), hsl(var(--accent) / 0.6))",
-                      boxShadow: "0 2px 8px hsl(var(--accent) / 0.5)",
+                      boxShadow: "0 2px 6px hsl(var(--accent) / 0.4)",
                     }}
                     transition={{
                       type: "spring",
-                      stiffness: 300,
-                      damping: 30,
-                      mass: 0.8,
+                      stiffness: 400,
+                      damping: 35,
+                      mass: 0.5,
                     }}
                   />
                 )}
@@ -159,20 +150,41 @@ export function ResultsNavigation({
           </div>
 
           {/* Tab Navigation - Mobile */}
-          <div className="md:hidden flex items-center justify-center gap-1.5 flex-1 overflow-x-auto scrollbar-hide">
+          <div 
+            className="md:hidden flex items-center justify-center gap-1.5 flex-1"
+            style={{
+              position: 'relative',
+            }}
+          >
+            <div 
+              className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide"
+              style={{
+                width: '100%',
+                overflowY: 'visible',
+                touchAction: 'pan-x',
+                overscrollBehavior: 'none',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                height: 'auto',
+                maxHeight: 'none',
+                position: 'relative',
+                zIndex: 1,
+              }}
+            >
             {tabs.map((tab) => (
               <motion.button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={cn(
                   "relative px-4 py-2 text-xs font-medium rounded-md whitespace-nowrap",
-                  "transition-all duration-200",
+                  "transition-colors duration-200",
                   activeTab === tab.id
                     ? "text-gray-900 dark:text-foreground pb-2.5"
                     : "text-gray-900 dark:text-muted-foreground"
                 )}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 style={{
                   transform: 'translateZ(0)',
                   backfaceVisibility: 'hidden',
@@ -235,6 +247,7 @@ export function ResultsNavigation({
                 )}
               </motion.button>
             ))}
+            </div>
           </div>
         </div>
       </div>
