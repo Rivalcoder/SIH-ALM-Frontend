@@ -39,10 +39,14 @@ export function ResultsNavigation({
         transform: 'translateZ(0)',
         backfaceVisibility: 'hidden',
         willChange: 'opacity',
+        pointerEvents: 'auto',
       }}
     >
       {/* Subtle gradient shimmer */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
+      <div 
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" 
+        style={{ pointerEvents: 'none' }}
+      />
       
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex items-center justify-center h-14 md:h-16">
@@ -68,6 +72,7 @@ export function ResultsNavigation({
                 style={{
                   transform: 'translateZ(0)',
                   backfaceVisibility: 'hidden',
+                  pointerEvents: 'auto',
                 }}
               >
                 {/* Inactive tab background - always visible */}
@@ -188,6 +193,7 @@ export function ResultsNavigation({
                 style={{
                   transform: 'translateZ(0)',
                   backfaceVisibility: 'hidden',
+                  pointerEvents: 'auto',
                 }}
               >
                 {/* Inactive tab background - always visible */}

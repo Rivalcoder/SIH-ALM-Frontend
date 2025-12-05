@@ -334,6 +334,7 @@ export function ResultsPage({
       <div 
         ref={headerNavRef} 
         className="absolute top-0 left-0 right-0 z-[45]"
+        style={{ pointerEvents: 'none' }}
       >
         {/* Header Section */}
         <motion.div
@@ -351,6 +352,7 @@ export function ResultsPage({
             transform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
             willChange: 'transform, opacity',
+            pointerEvents: 'auto',
           }}
         >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
@@ -404,6 +406,7 @@ export function ResultsPage({
             border: 'none',
             boxShadow: 'none',
             willChange: 'transform, opacity',
+            pointerEvents: 'auto',
           }}
         >
           <ResultsNavigation
