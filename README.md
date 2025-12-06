@@ -20,10 +20,10 @@ npm i
 
 # Step 4: Set up environment variables
 # Create a .env.local file in the root directory with:
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+NEXT_PUBLIC_API_BASE_URL=https://untraceable-tiara-fittingly.ngrok-free.dev
 
-# For production, update to your production API URL:
-# NEXT_PUBLIC_API_BASE_URL=https://your-api-domain.com
+# Optional: Set a secondary fallback URL (defaults to http://localhost:8000)
+# NEXT_PUBLIC_API_BASE_URL_SECONDARY=http://localhost:8000
 
 # Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
@@ -35,13 +35,24 @@ Create a `.env.local` file in the root directory with the following:
 
 ```env
 # Backend API Configuration
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+# Primary API URL (required)
+NEXT_PUBLIC_API_BASE_URL=https://untraceable-tiara-fittingly.ngrok-free.dev
+
+# Secondary fallback URL (optional, defaults to http://localhost:8000)
+# The app will automatically try the secondary URL if the primary fails
+NEXT_PUBLIC_API_BASE_URL_SECONDARY=http://localhost:8000
 ```
 
-- **Development**: Use `http://localhost:8000` (or your local backend URL)
-- **Production**: Update to your production API domain (e.g., `https://your-api-domain.com`)
+### API Fallback Mechanism
 
-The application will use this URL to communicate with the backend API for:
+The application implements an automatic fallback system:
+1. **Primary URL**: Tries `NEXT_PUBLIC_API_BASE_URL` first
+2. **Secondary URL**: If primary fails, automatically tries `NEXT_PUBLIC_API_BASE_URL_SECONDARY` (or `http://localhost:8000` by default)
+3. **Error Display**: If both URLs fail, a detailed error message is shown to the user
+
+This ensures reliability when the primary API endpoint is unavailable (e.g., ngrok tunnel down).
+
+The application uses these URLs to communicate with the backend API for:
 - Audio file processing (`/process-audio`)
 - Chat functionality (`/chat`)
 - Health checks (`/health`)
