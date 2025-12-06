@@ -7,6 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import { History, UploadCloud, Loader, BotMessageSquare, PenSquare, Smile } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { ChatMessage } from "@/lib/analyzeTypes";
+import { processAudio } from "@/lib/api/client";
+import { mapApiResponseToDatasetSample } from "@/lib/api/mapper";
+import { useToast } from "@/hooks/use-toast";
 
 const features = [
   {
@@ -27,7 +30,7 @@ const features = [
 ];
 
 interface UploadPageProps {
-  onFileProcessed: (file: File, result: DatasetSample, welcomeMessage: ChatMessage) => void;
+  onFileProcessed: (file: File, result: DatasetSample, welcomeMessage: ChatMessage, sessionId: string) => void;
   showSidebar: boolean;
   onShowSidebar: () => void;
 }
@@ -39,99 +42,18 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
   const [progressMessage, setProgressMessage] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const { toast } = useToast();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const generateAnalysisResult = (fileName: string): DatasetSample => {
-    const audioId = `audio_${String(Date.now()).slice(-6)}`;
-    const languages = ["hindi", "english", "tamil", "hinglish"];
-    const audioEvents = ["dog_bark", "car_horn", "rain", "station_announcement", "crowd_noise"];
-    const language = languages[Math.floor(Math.random() * languages.length)];
-    const audioEvent = audioEvents[Math.floor(Math.random() * audioEvents.length)];
-    const duration = 3 + Math.random() * 7;
-    
-    const transcriptions: Record<string, string> = {
-      hindi: "इस मामले में कोर्ट द्वारा निर्देश दिया गया है",
-      english: "The traffic signal at MG Road has been temporarily diverted.",
-      tamil: "இன்று இரவு மழை பெய்யும் என்று வானிலை மையம் கூறியுள்ளது.",
-      hinglish: "Railway station pe announcement thodi der ke liye delay ho gaya hai.",
-    };
-
-    const diarization = [
-      { speaker: "spk_0", start: 0, end: duration / 2 },
-      { speaker: "spk_1", start: duration / 2, end: duration },
-    ];
-
-    const questionAnswerPair = [
-      {
-        question: "What type of domain is the utterance talking about?",
-        answer: language === "hindi" ? "Legal / court proceedings" : "Public announcement",
-      },
-      {
-        question: "What is the primary language?",
-        answer: language.charAt(0).toUpperCase() + language.slice(1),
-      },
-    ];
-
-    const emotions = ["neutral", "happy", "sad", "angry", "excited", "calm"];
-    const dominantEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-    const emotionScores = {
-      neutral: Math.random() * 0.3 + 0.1,
-      happy: Math.random() * 0.4 + 0.2,
-      sad: Math.random() * 0.3 + 0.1,
-      angry: Math.random() * 0.2 + 0.05,
-      excited: Math.random() * 0.3 + 0.15,
-      calm: Math.random() * 0.4 + 0.2,
-    };
-    const total = Object.values(emotionScores).reduce((a, b) => a + b, 0);
-    Object.keys(emotionScores).forEach(key => {
-      emotionScores[key as keyof typeof emotionScores] /= total;
-    });
-    emotionScores[dominantEmotion as keyof typeof emotionScores] = Math.max(0.4, emotionScores[dominantEmotion as keyof typeof emotionScores]);
-
-    const paralinguistics = {
-      pitch: {
-        mean: Math.random() * 100 + 150,
-        std: Math.random() * 20 + 10,
-        min: Math.random() * 50 + 100,
-        max: Math.random() * 100 + 200,
-      },
-      emotions: emotionScores,
-      dominant_emotion: dominantEmotion,
-      speaking_rate: Math.random() * 0.5 + 2.0,
-      energy: Math.random() * 0.4 + 0.3,
-      spectral_centroid: Math.random() * 2000 + 1000,
-    };
-
-    return {
-      audio_id: audioId,
-      language: language,
-      duration: parseFloat(duration.toFixed(2)),
-      transcription: transcriptions[language] || transcriptions.english,
-      diarization: diarization,
-      audio_event: audioEvent,
-      paralinguistics: paralinguistics,
-      source: `openslr_${language}+esc50`,
-      speech_source: {
-        type: `openslr_${language}`,
-        original_file: fileName,
-        utterance_id: fileName.replace(/\.[^/.]+$/, ""),
-      },
-      nonspeech_source: {
-        audio_event: audioEvent,
-        source: "esc50",
-        original_file: `nonspeech-${audioEvent}.wav`,
-      },
-      mixing_ratios: {
-        speech: 0.7,
-        nonspeech: 0.3,
-      },
-      question_answer_pair: questionAnswerPair,
-    };
-  };
 
   const processFile = async (file: File) => {
     if (!file.type.startsWith("audio/")) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload an audio file.",
+      });
       return;
     }
 
@@ -143,34 +65,53 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
     try {
       setProgress(10);
       setProgressMessage("Uploading audio...");
-      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Call the real API
+      const apiResponse = await processAudio(file);
 
       setProgress(30);
-      setProgressMessage("Transcribing audio...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setProgressMessage("Processing transcription...");
 
       setProgress(60);
       setProgressMessage("Analyzing content and emotions...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
       setProgress(90);
       setProgressMessage("Finalizing analysis...");
-      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Map API response to DatasetSample format
+      const result = mapApiResponseToDatasetSample(apiResponse, file.name);
 
       setProgress(100);
       setProgressMessage("Analysis complete!");
 
-      const result = generateAnalysisResult(file.name);
+      // Count unique speakers
+      const uniqueSpeakers = new Set(
+        result.diarization.map(seg => seg.speaker).filter(Boolean)
+      );
+      const speakerCount = uniqueSpeakers.size || result.diarization.length;
+      
+      // Get language name (dynamic import to avoid circular dependencies)
+      const languageUtils = await import("@/lib/languageUtils");
+      const languageName = languageUtils.getLanguageName(result.language);
+      
+      // Create welcome message
       const welcomeMessage: ChatMessage = {
         id: Date.now().toString(),
         role: "assistant",
-        content: `I've analyzed your audio file "${file.name}". The analysis shows ${result.diarization.length} speakers, ${result.question_answer_pair.length} Q&A pairs, and detected "${result.audio_event}" as the audio event. How can I help you understand these results better?`,
+        content: `I've analyzed your audio file "${file.name}". The analysis shows ${speakerCount} speaker${speakerCount !== 1 ? "s" : ""}, detected language "${languageName}", and identified "${result.audio_event.replace(/_/g, " ")}" as the audio event. How can I help you understand these results better?`,
         timestamp: new Date(),
       };
       
-      onFileProcessed(file, result, welcomeMessage);
+      // Pass session_id along with the result
+      onFileProcessed(file, result, welcomeMessage, apiResponse.session_id);
     } catch (error) {
       console.error("Analysis failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to process audio file";
+      toast({
+        variant: "destructive",
+        title: "Analysis failed",
+        description: errorMessage,
+      });
     } finally {
       setIsUploading(false);
       setIsAnalyzing(false);

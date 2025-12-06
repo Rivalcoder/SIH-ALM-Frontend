@@ -1,16 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "../StatCard";
-import { Users, Globe, HeartPulse, Gauge, Info, Wind } from "lucide-react";
+import { Users, Globe, HeartPulse, Gauge, Info, Wind, Loader } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
+import { getLanguageName } from "@/lib/languageUtils";
+import { generateAnalysisSummary } from "@/lib/aiUtils";
 
 interface OverviewTabProps {
   analysis: DatasetSample;
 }
 
 export function OverviewTab({ analysis }: OverviewTabProps) {
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+
   // Extract emotion data from paralinguistics
   const paralinguistics = analysis.paralinguistics as {
     emotions?: Record<string, number>;
@@ -19,10 +25,35 @@ export function OverviewTab({ analysis }: OverviewTabProps) {
   
   const dominantEmotion = paralinguistics?.dominant_emotion || "neutral";
   
+  // Count unique speakers (not segments)
+  const uniqueSpeakers = new Set(
+    analysis.diarization.map(seg => seg.speaker).filter(Boolean)
+  );
+  const speakerCount = uniqueSpeakers.size || analysis.diarization.length;
+  
   // Format emotion name for display
   const formatEmotion = (emotion: string) => {
     return emotion.charAt(0).toUpperCase() + emotion.slice(1);
   };
+
+  // Generate AI summary on mount
+  useEffect(() => {
+    const generateSummary = async () => {
+      setIsGeneratingSummary(true);
+      try {
+        const summary = await generateAnalysisSummary(analysis);
+        setAiSummary(summary);
+      } catch (error) {
+        console.error('Failed to generate AI summary:', error);
+        // Fallback to default summary
+        setAiSummary(null);
+      } finally {
+        setIsGeneratingSummary(false);
+      }
+    };
+
+    generateSummary();
+  }, [analysis]);
 
   return (
     <div className="w-full space-y-8">
@@ -30,14 +61,14 @@ export function OverviewTab({ analysis }: OverviewTabProps) {
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Speakers Detected"
-          value={analysis.diarization.length}
+          value={speakerCount}
           icon={Users}
           description="Distinct voices identified"
           index={0}
         />
         <StatCard
           title="Language"
-          value={analysis.language.charAt(0).toUpperCase() + analysis.language.slice(1)}
+          value={getLanguageName(analysis.language)}
           icon={Globe}
           description="Primary language spoken"
           index={1}
@@ -106,13 +137,24 @@ export function OverviewTab({ analysis }: OverviewTabProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                This audio contains <span className="font-semibold text-foreground">{analysis.diarization.length}</span> speaker{analysis.diarization.length !== 1 ? "s" : ""} speaking in{" "}
-                <span className="font-semibold text-foreground">{analysis.language}</span>. The audio includes a{" "}
-                <span className="font-semibold text-foreground">{analysis.audio_event.replace(/_/g, " ")}</span> event mixed at{" "}
-                <span className="font-semibold text-foreground">{(analysis.mixing_ratios.nonspeech * 100).toFixed(0)}%</span> non-speech content. The analysis generated{" "}
-                <span className="font-semibold text-foreground">{analysis.question_answer_pair.length}</span> question-answer pair{analysis.question_answer_pair.length !== 1 ? "s" : ""} from the content.
-              </p>
+              {isGeneratingSummary ? (
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <Loader className="h-4 w-4 animate-spin" />
+                  <span>Generating AI summary...</span>
+                </div>
+              ) : aiSummary ? (
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  {aiSummary}
+                </p>
+              ) : (
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  This audio contains <span className="font-semibold text-foreground">{speakerCount}</span> speaker{speakerCount !== 1 ? "s" : ""} speaking in{" "}
+                  <span className="font-semibold text-foreground">{getLanguageName(analysis.language)}</span>. The audio includes a{" "}
+                  <span className="font-semibold text-foreground">{analysis.audio_event.replace(/_/g, " ")}</span> event mixed at{" "}
+                  <span className="font-semibold text-foreground">{(analysis.mixing_ratios.nonspeech * 100).toFixed(0)}%</span> non-speech content. The analysis generated{" "}
+                  <span className="font-semibold text-foreground">{analysis.question_answer_pair.length}</span> question-answer pair{analysis.question_answer_pair.length !== 1 ? "s" : ""} from the content.
+                </p>
+              )}
             </CardContent>
           </div>
         </Card>

@@ -6,7 +6,9 @@ import { Sparkles, Waves } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { ChatMessage } from "@/lib/analyzeTypes";
 import { useToast } from "@/hooks/use-toast";
+import { chatAboutAudio } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
+import { translateText as aiTranslateText } from "@/lib/aiUtils";
 import { ResultsNavigation } from "./ResultsNavigation";
 import { AudioPlayer } from "./AudioPlayer";
 import { TranscriptView } from "./TranscriptView";
@@ -20,6 +22,7 @@ interface ResultsPageProps {
   audioUrl: string | null;
   currentAnalysis: DatasetSample | null;
   chatMessages: ChatMessage[];
+  sessionId: string | null;
   onNewAnalysis: () => void;
   onSaveToHistory: () => void;
   showSidebar: boolean;
@@ -32,25 +35,31 @@ const buildDiarizedTranscript = (analysis: DatasetSample): string => {
     return analysis.transcription;
   }
 
-  const segments = analysis.diarization.map((seg, idx) => {
-    const speakerLabel = seg.speaker || `Speaker ${idx + 1}`;
-    return `${speakerLabel}: ${analysis.transcription}`;
-  });
+  // Check if we have access to diarization_with_text from the API response
+  // This is stored in paralinguistics
+  const paralinguistics = analysis.paralinguistics as {
+    diarization_with_text?: Array<{
+      speaker: string;
+      start: number;
+      end: number;
+      text: string;
+    }>;
+  } | undefined;
 
-  return segments.join("\n\n");
-};
+  // If we have segment-level text, use it (this is the proper way)
+  if (paralinguistics?.diarization_with_text && paralinguistics.diarization_with_text.length > 0) {
+    return paralinguistics.diarization_with_text
+      .map((seg) => {
+        const speakerLabel = seg.speaker || "Unknown Speaker";
+        return `${speakerLabel}: ${seg.text}`;
+      })
+      .join("\n\n");
+  }
 
-// Simple translation function (placeholder - can be enhanced with actual API)
-const translateText = async (text: string, targetLanguage: string): Promise<string> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (targetLanguage === "Original") {
-        resolve(text);
-      } else {
-        resolve(`[Translated to ${targetLanguage}]\n${text}`);
-      }
-    }, 1000);
-  });
+  // Fallback: If no segment-level text, just show the transcript once with the first speaker
+  // Don't repeat it for each segment
+  const firstSpeaker = analysis.diarization[0]?.speaker || "Speaker";
+  return `${firstSpeaker}: ${analysis.transcription}`;
 };
 
 export function ResultsPage({
@@ -58,6 +67,7 @@ export function ResultsPage({
   audioUrl,
   currentAnalysis,
   chatMessages: initialChatMessages,
+  sessionId,
   onNewAnalysis,
   onSaveToHistory,
   showSidebar,
@@ -202,7 +212,7 @@ export function ResultsPage({
       const transcriptToTranslate = showDiarization
         ? buildDiarizedTranscript(currentAnalysis)
         : currentAnalysis.transcription;
-      const translated = await translateText(transcriptToTranslate, lang);
+      const translated = await aiTranslateText(transcriptToTranslate, lang);
       setTranslatedTranscript(translated);
     } catch (error) {
       console.error("Translation failed", error);
@@ -216,44 +226,17 @@ export function ResultsPage({
     }
   };
 
-  const generateAIResponse = (query: string, analysis: DatasetSample): string => {
-    const lowerQuery = query.toLowerCase();
-
-    if (lowerQuery.includes("diarization") || lowerQuery.includes("speaker")) {
-      return `The analysis identified ${analysis.diarization.length} speakers: ${analysis.diarization
-        .map((d) => d.speaker)
-        .join(", ")}. Speaker ${analysis.diarization[0].speaker} spoke from ${analysis.diarization[0].start}s to ${analysis.diarization[0].end}s${
-        analysis.diarization[1]
-          ? `, and ${analysis.diarization[1].speaker} from ${analysis.diarization[1].start}s to ${analysis.diarization[1].end}s`
-          : ""
-      }.`;
-    }
-
-    if (lowerQuery.includes("event") || lowerQuery.includes("audio event")) {
-      return `The detected audio event is "${analysis.audio_event.replace(/_/g, " ")}". This non-speech event was mixed with the speech at a ratio of ${(
-        analysis.mixing_ratios.nonspeech * 100
-      ).toFixed(0)}% non-speech to ${(analysis.mixing_ratios.speech * 100).toFixed(0)}% speech.`;
-    }
-
-    if (lowerQuery.includes("transcript") || lowerQuery.includes("said") || lowerQuery.includes("speech")) {
-      return `The transcription in ${analysis.language} is: "${analysis.transcription}". The audio duration is ${analysis.duration} seconds.`;
-    }
-
-    if (lowerQuery.includes("question") || lowerQuery.includes("qa") || lowerQuery.includes("answer")) {
-      return `The analysis generated ${analysis.question_answer_pair.length} Q&A pairs: ${analysis.question_answer_pair
-        .map((qa) => `"${qa.question}" -> "${qa.answer}"`)
-        .join("; ")}.`;
-    }
-
-    if (lowerQuery.includes("language")) {
-      return `The primary language detected is ${analysis.language.charAt(0).toUpperCase() + analysis.language.slice(1)}. The source is ${analysis.source}.`;
-    }
-
-    return `I can help you understand the analysis results. The audio has been processed and shows ${analysis.diarization.length} speakers, ${analysis.question_answer_pair.length} Q&A pairs, and a "${analysis.audio_event.replace(/_/g, " ")}" audio event. What specific aspect would you like to explore?`;
-  };
-
   const handleChatSubmit = async (message: string) => {
-    if (!message.trim() || isChatLoading || !currentAnalysis) return;
+    if (!message.trim() || isChatLoading || !currentAnalysis || !sessionId) {
+      if (!sessionId) {
+        toast({
+          variant: "destructive",
+          title: "Session Error",
+          description: "No active session. Please upload a new audio file.",
+        });
+      }
+      return;
+    }
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -265,16 +248,43 @@ export function ResultsPage({
     setChatMessages((prev) => [...prev, userMessage]);
     setIsChatLoading(true);
 
-    setTimeout(() => {
+    try {
+      // Call the real chat API
+      const chatResponse = await chatAboutAudio(sessionId, message);
+
+      if (chatResponse.error) {
+        throw new Error(chatResponse.error);
+      }
+
       const aiResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: generateAIResponse(message, currentAnalysis),
+        content: chatResponse.answer,
         timestamp: new Date(),
       };
+
       setChatMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Chat request failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to get AI response";
+      
+      const errorResponse: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `I apologize, but I encountered an error: ${errorMessage}. Please try again.`,
+        timestamp: new Date(),
+      };
+
+      setChatMessages((prev) => [...prev, errorResponse]);
+      
+      toast({
+        variant: "destructive",
+        title: "Chat Error",
+        description: errorMessage,
+      });
+    } finally {
       setIsChatLoading(false);
-    }, 1500);
+    }
   };
 
   if (!currentAnalysis) return null;

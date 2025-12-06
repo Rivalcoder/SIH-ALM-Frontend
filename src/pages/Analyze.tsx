@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { ChatMessage, AnalysisHistory } from "@/lib/analyzeTypes";
+import { getLanguageName } from "@/lib/languageUtils";
 import { UploadPage } from "@/components/analyze/UploadPage";
 import { ResultsPage } from "@/components/analyze/ResultsPage";
 import { cn } from "@/lib/utils";
@@ -28,8 +29,10 @@ export default function Analyze() {
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisHistory[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<AnalysisHistory | null>(null);
   const [currentAnalysis, setCurrentAnalysis] = useState<DatasetSample | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Load analysis history
     const saved = localStorage.getItem("analysisHistory");
     if (saved) {
       try {
@@ -47,6 +50,38 @@ export default function Analyze() {
         console.error("Failed to load history:", e);
       }
     }
+
+    // Restore current analysis from localStorage on page load
+    const currentAnalysisStr = localStorage.getItem("currentAnalysis");
+    if (currentAnalysisStr) {
+      try {
+        const savedAnalysis = JSON.parse(currentAnalysisStr);
+        setCurrentAnalysis(savedAnalysis);
+        setHasResults(true);
+        
+        // Try to restore chat messages if available
+        const savedChatMessages = localStorage.getItem("currentChatMessages");
+        if (savedChatMessages) {
+          try {
+            const messages = JSON.parse(savedChatMessages).map((m: any) => ({
+              ...m,
+              timestamp: new Date(m.timestamp),
+            }));
+            setChatMessages(messages);
+          } catch (e) {
+            console.error("Failed to load chat messages:", e);
+          }
+        }
+        
+        // Restore session ID if available
+        const savedSessionId = localStorage.getItem("currentSessionId");
+        if (savedSessionId) {
+          setCurrentSessionId(savedSessionId);
+        }
+      } catch (e) {
+        console.error("Failed to load current analysis:", e);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -55,12 +90,43 @@ export default function Analyze() {
     }
   }, [analysisHistory]);
 
-  const handleFileProcessed = (file: File, result: DatasetSample, welcomeMessage: ChatMessage) => {
+  // Save current analysis to localStorage whenever it changes
+  useEffect(() => {
+    if (currentAnalysis) {
+      localStorage.setItem("currentAnalysis", JSON.stringify(currentAnalysis));
+      // Dispatch custom event to notify Graph page (same tab)
+      window.dispatchEvent(new Event("currentAnalysisUpdated"));
+    } else {
+      localStorage.removeItem("currentAnalysis");
+      window.dispatchEvent(new Event("currentAnalysisUpdated"));
+    }
+  }, [currentAnalysis]);
+
+  // Save chat messages to localStorage whenever they change
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      localStorage.setItem("currentChatMessages", JSON.stringify(chatMessages));
+    } else {
+      localStorage.removeItem("currentChatMessages");
+    }
+  }, [chatMessages]);
+
+  // Save session ID to localStorage whenever it changes
+  useEffect(() => {
+    if (currentSessionId) {
+      localStorage.setItem("currentSessionId", currentSessionId);
+    } else {
+      localStorage.removeItem("currentSessionId");
+    }
+  }, [currentSessionId]);
+
+  const handleFileProcessed = (file: File, result: DatasetSample, welcomeMessage: ChatMessage, sessionId: string) => {
     setSelectedFile(file);
     const url = URL.createObjectURL(file);
     setAudioUrl(url);
     setCurrentAnalysis(result);
     setChatMessages([welcomeMessage]);
+    setCurrentSessionId(sessionId);
     setHasResults(true);
   };
 
@@ -94,6 +160,10 @@ export default function Analyze() {
     setCurrentAnalysis(null);
     setChatMessages([]);
     setSelectedHistory(null);
+    setCurrentSessionId(null);
+    localStorage.removeItem("currentAnalysis");
+    localStorage.removeItem("currentChatMessages");
+    localStorage.removeItem("currentSessionId");
   };
 
   return (
@@ -163,7 +233,7 @@ export default function Analyze() {
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                               <Badge variant="secondary" className="text-[10px]">
-                                {history.result.language}
+                                {getLanguageName(history.result.language)}
                               </Badge>
                               <Badge variant="secondary" className="text-[10px]">
                                 {history.result.diarization.length} speakers
@@ -193,6 +263,7 @@ export default function Analyze() {
             audioUrl={audioUrl}
             currentAnalysis={currentAnalysis}
             chatMessages={chatMessages}
+            sessionId={currentSessionId}
             onNewAnalysis={startNewAnalysis}
             onSaveToHistory={saveToHistory}
             showSidebar={showSidebar}

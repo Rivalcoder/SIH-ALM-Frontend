@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Loader, Text, Languages } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
+import { getLanguageName } from "@/lib/languageUtils";
 
 interface TranscriptViewProps {
   analysis: DatasetSample;
@@ -24,12 +25,31 @@ const buildDiarizedTranscript = (analysis: DatasetSample): string => {
     return analysis.transcription;
   }
 
-  const segments = analysis.diarization.map((seg, idx) => {
-    const speakerLabel = seg.speaker || `Speaker ${idx + 1}`;
-    return `${speakerLabel}: ${analysis.transcription}`;
-  });
+  // Check if we have access to diarization_with_text from the API response
+  // This is stored in paralinguistics
+  const paralinguistics = analysis.paralinguistics as {
+    diarization_with_text?: Array<{
+      speaker: string;
+      start: number;
+      end: number;
+      text: string;
+    }>;
+  } | undefined;
 
-  return segments.join("\n\n");
+  // If we have segment-level text, use it (this is the proper way)
+  if (paralinguistics?.diarization_with_text && paralinguistics.diarization_with_text.length > 0) {
+    return paralinguistics.diarization_with_text
+      .map((seg) => {
+        const speakerLabel = seg.speaker || "Unknown Speaker";
+        return `${speakerLabel}: ${seg.text}`;
+      })
+      .join("\n\n");
+  }
+
+  // Fallback: If no segment-level text, just show the transcript once with the first speaker
+  // Don't repeat it for each segment
+  const firstSpeaker = analysis.diarization[0]?.speaker || "Speaker";
+  return `${firstSpeaker}: ${analysis.transcription}`;
 };
 
 export function TranscriptView({
@@ -82,7 +102,7 @@ export function TranscriptView({
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Original">Original ({analysis.language})</SelectItem>
+                    <SelectItem value="Original">Original ({getLanguageName(analysis.language)})</SelectItem>
                     <SelectItem value="English">English</SelectItem>
                     <SelectItem value="Tamil">Tamil</SelectItem>
                     <SelectItem value="Hindi">Hindi</SelectItem>

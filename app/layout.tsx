@@ -29,9 +29,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preload" href="/Voicemail.lottie" as="fetch" crossOrigin="anonymous" />
-      </head>
       <body className={inter.className}>
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>

@@ -32,15 +32,25 @@ export function Navbar() {
         backdropFilter: isAnalyzePage 
           ? (scrolled ? "blur(10px)" : "blur(6px)")
           : (scrolled ? "blur(16px)" : "blur(8px)"),
-        backgroundColor: isAnalyzePage
-          ? (scrolled ? "hsl(var(--background) / 0.4)" : "hsl(var(--background) / 0.1)")
-          : (scrolled ? "hsl(var(--background) / 0.9)" : "hsl(var(--background) / 0.7)"),
         borderBottomWidth: isAnalyzePage ? "0px" : "1px",
       }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={`fixed top-0 left-0 right-0 z-50 ${isAnalyzePage ? "border-0" : "border-b border-border/50"}`}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Animated background overlay */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          backgroundColor: "hsl(var(--background))",
+        }}
+        animate={{
+          opacity: isAnalyzePage
+            ? (scrolled ? 0.4 : 0.1)
+            : (scrolled ? 0.9 : 0.7),
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex h-16 items-center justify-between">
           {/* Logo - Clean and professional */}
           <Link href="/" className="flex items-center gap-2.5 group">

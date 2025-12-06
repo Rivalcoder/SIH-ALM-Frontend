@@ -1,59 +1,93 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InsightCard } from "../InsightCard";
-import { Target, ListTodo, Hand, BotMessageSquare } from "lucide-react";
+import { Target, ListTodo, Hand, BotMessageSquare, Loader } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
+import { extractActionItems, extractKeyDecisions, extractKeyTopics } from "@/lib/aiUtils";
 
 interface InsightsTabProps {
   analysis: DatasetSample;
 }
 
 export function InsightsTab({ analysis }: InsightsTabProps) {
-  const topics = useMemo(() => {
+  const [actionItems, setActionItems] = useState<string[]>([]);
+  const [keyDecisions, setKeyDecisions] = useState<string[]>([]);
+  const [keyTopics, setKeyTopics] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fallback topics from Q&A questions
+  const fallbackTopics = useMemo(() => {
     return analysis.question_answer_pair.map((qa) => qa.question);
   }, [analysis]);
 
-  const actionItems = useMemo(() => {
-    return analysis.question_answer_pair
-      .filter((qa) => qa.answer.toLowerCase().includes("action") || qa.answer.toLowerCase().includes("task"))
-      .map((qa) => qa.answer);
-  }, [analysis]);
+  // Extract insights using AI
+  useEffect(() => {
+    const extractInsights = async () => {
+      setIsLoading(true);
+      try {
+        const [actions, decisions, topics] = await Promise.all([
+          extractActionItems(analysis),
+          extractKeyDecisions(analysis),
+          extractKeyTopics(analysis),
+        ]);
+        
+        setActionItems(actions);
+        setKeyDecisions(decisions);
+        setKeyTopics(topics.length > 0 ? topics : fallbackTopics);
+      } catch (error) {
+        console.error('Failed to extract insights:', error);
+        // Fallback to simple extraction
+        setActionItems([]);
+        setKeyDecisions([]);
+        setKeyTopics(fallbackTopics);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const keyDecisions = useMemo(() => {
-    return analysis.question_answer_pair
-      .filter((qa) => qa.answer.toLowerCase().includes("decision") || qa.answer.toLowerCase().includes("decided"))
-      .map((qa) => qa.answer);
-  }, [analysis]);
+    extractInsights();
+  }, [analysis, fallbackTopics]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <InsightCard
-        title="Key Topics"
-        icon={Target}
-        data={topics}
-        emptyText="No key topics were identified."
-        index={0}
-        gradient="from-blue-500/20 via-cyan-500/20 to-teal-500/20"
-      />
-      <InsightCard
-        title="Action Items"
-        icon={ListTodo}
-        data={actionItems}
-        emptyText="No action items were mentioned."
-        index={1}
-        gradient="from-purple-500/20 via-pink-500/20 to-rose-500/20"
-      />
-      <InsightCard
-        title="Key Decisions"
-        icon={Hand}
-        data={keyDecisions}
-        emptyText="No key decisions were identified."
-        index={2}
-        gradient="from-emerald-500/20 via-green-500/20 to-teal-500/20"
-      />
+      {isLoading ? (
+        <div className="md:col-span-2 lg:col-span-3 flex items-center justify-center p-8">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <Loader className="h-5 w-5 animate-spin" />
+            <span>Analyzing insights...</span>
+          </div>
+        </div>
+      ) : (
+        <>
+          <InsightCard
+            title="Key Topics"
+            icon={Target}
+            data={keyTopics}
+            emptyText="No key topics were identified."
+            index={0}
+            gradient="from-blue-500/20 via-cyan-500/20 to-teal-500/20"
+          />
+          <InsightCard
+            title="Action Items"
+            icon={ListTodo}
+            data={actionItems}
+            emptyText="No action items were mentioned."
+            index={1}
+            gradient="from-purple-500/20 via-pink-500/20 to-rose-500/20"
+          />
+          <InsightCard
+            title="Key Decisions"
+            icon={Hand}
+            data={keyDecisions}
+            emptyText="No key decisions were identified."
+            index={2}
+            gradient="from-emerald-500/20 via-green-500/20 to-teal-500/20"
+          />
+        </>
+      )}
 
       {/* Q&A Pairs */}
       <motion.div

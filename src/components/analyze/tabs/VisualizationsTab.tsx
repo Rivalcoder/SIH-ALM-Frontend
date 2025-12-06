@@ -47,6 +47,58 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
     return emotion.charAt(0).toUpperCase() + emotion.slice(1);
   };
 
+  // Extract all background events from paralinguistics (stored directly from API)
+  const backgroundEvents = useMemo(() => {
+    const paralinguistics = analysis.paralinguistics as {
+      background_events?: Array<{ name: string; score: number }>;
+    } | undefined;
+    
+    if (paralinguistics?.background_events && Array.isArray(paralinguistics.background_events)) {
+      // Convert scores to percentages and return
+      return paralinguistics.background_events.map(event => ({
+        name: event.name,
+        percentage: (event.score || 0) * 100
+      }));
+    }
+    
+    // Fallback: Try to parse from Q&A if background_events not available
+    const eventsQnA = analysis.question_answer_pair.find(
+      (qa) => qa.question === "What audio events were detected?"
+    );
+    
+    if (!eventsQnA || !eventsQnA.answer) {
+      return [];
+    }
+
+    // Parse the answer string like "Speech (99.2%), Inside, small room (0.2%), Narration, monologue (0.1%)"
+    const speechKeywords = ['speech', 'speaker', 'voice', 'narration', 'monologue', 'synthesizer'];
+    const events: Array<{ name: string; percentage: number }> = [];
+    
+    // Split by comma and parse each event
+    const eventStrings = eventsQnA.answer.split(',').map(s => s.trim());
+    
+    for (const eventStr of eventStrings) {
+      // Match pattern like "Event Name (percentage%)"
+      const match = eventStr.match(/^(.+?)\s*\(([\d.]+)%\)$/);
+      if (match) {
+        const eventName = match[1].trim();
+        const percentage = parseFloat(match[2]);
+        
+        // Skip speech-related events
+        const isSpeechEvent = speechKeywords.some(keyword => 
+          eventName.toLowerCase().includes(keyword)
+        );
+        
+        if (!isSpeechEvent && eventName && !isNaN(percentage)) {
+          events.push({ name: eventName, percentage });
+        }
+      }
+    }
+    
+    // Sort by percentage descending
+    return events.sort((a, b) => b.percentage - a.percentage);
+  }, [analysis]);
+
   return (
     <div className="w-full space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
@@ -211,26 +263,52 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3">Background Events</h3>
                 <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-foreground">
-                        {analysis.audio_event.replace(/_/g, " ").split(" ").map(word => 
-                          word.charAt(0).toUpperCase() + word.slice(1)
-                        ).join(" ")}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {(analysis.mixing_ratios.nonspeech * 100).toFixed(1)}%
-                      </span>
+                  {backgroundEvents.length > 0 ? (
+                    backgroundEvents.map((event, index) => (
+                      <div key={index} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-foreground">
+                            {event.name.split(", ").map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                            ).join(", ")}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {event.percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${event.percentage}%` }}
+                            transition={{ duration: 0.8, delay: 0.4 + index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    // Fallback to single event if parsing fails
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground">
+                          {analysis.audio_event.replace(/_/g, " ").split(" ").map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                          ).join(" ")}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {(analysis.mixing_ratios.nonspeech * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${analysis.mixing_ratios.nonspeech * 100}%` }}
+                          transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${analysis.mixing_ratios.nonspeech * 100}%` }}
-                        transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </CardContent>

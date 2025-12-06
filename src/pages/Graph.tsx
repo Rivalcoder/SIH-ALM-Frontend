@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import { Navbar } from "@/components/Navbar";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize2, Wind } from "lucide-react";
+import { DatasetSample } from "@/lib/datasetSamples";
 
 const nodes = [
   { id: 1, label: "Speaker A", x: 30, y: 20, type: "person" },
@@ -27,6 +29,63 @@ const connections = [
 
 export default function Graph() {
   const [zoom, setZoom] = useState(100);
+  const [latestAnalysis, setLatestAnalysis] = useState<DatasetSample | null>(null);
+
+  const loadAnalysis = () => {
+    // Load the latest analysis from localStorage
+    // First, try to get the current analysis (most recent)
+    const currentAnalysisStr = localStorage.getItem("currentAnalysis");
+    if (currentAnalysisStr) {
+      try {
+        const currentAnalysis = JSON.parse(currentAnalysisStr);
+        setLatestAnalysis(currentAnalysis);
+        return;
+      } catch (e) {
+        console.error("Failed to load current analysis:", e);
+      }
+    }
+
+    // If no current analysis, try to get from history
+    const saved = localStorage.getItem("analysisHistory");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.length > 0) {
+          // Get the most recent analysis (first item in the array)
+          const latest = parsed[0];
+          setLatestAnalysis(latest.result);
+        }
+      } catch (e) {
+        console.error("Failed to load analysis:", e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Load analysis on mount
+    loadAnalysis();
+
+    // Listen for storage changes (when analysis is updated in another tab/window)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "currentAnalysis" || e.key === "analysisHistory") {
+        loadAnalysis();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also listen for custom storage events (for same-tab updates)
+    const handleCustomStorageChange = () => {
+      loadAnalysis();
+    };
+
+    window.addEventListener("currentAnalysisUpdated", handleCustomStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("currentAnalysisUpdated", handleCustomStorageChange);
+    };
+  }, []);
 
   const getNodeColor = (type: string) => {
     switch (type) {
@@ -152,6 +211,53 @@ export default function Graph() {
               ))}
             </div>
           </Card>
+
+          {/* Background Events */}
+          {latestAnalysis && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full mt-6"
+            >
+              <Card className="border border-gray-200 bg-white dark:border-border dark:bg-card backdrop-blur-xl shadow-xl overflow-hidden relative">
+                <div className="relative z-10">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 border border-blue-500">
+                        <Wind className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <CardTitle className="text-xl sm:text-2xl font-bold">Background Events</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-foreground">
+                            {latestAnalysis.audio_event.replace(/_/g, " ").split(" ").map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                            ).join(" ")}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {(latestAnalysis.mixing_ratios.nonspeech * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${latestAnalysis.mixing_ratios.nonspeech * 100}%` }}
+                            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </div>
+              </Card>
+            </motion.div>
+          )}
 
           {/* Legend */}
           <Card className="glass p-6 mt-6">
