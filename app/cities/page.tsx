@@ -7,6 +7,7 @@ import { ArrowRight, MapPin, Plus } from "lucide-react";
 import { citiesData } from "@/lib/data";
 import GovHeader from "@/components/gov/GovHeader";
 import AnalysisView from "@/components/gov/AnalysisView";
+import ArchitectureViz from "@/components/ArchitectureViz";
 
 export default function CitiesPage() {
     const [isQuickAnalysisOpen, setIsQuickAnalysisOpen] = useState(false);
@@ -109,6 +110,19 @@ export default function CitiesPage() {
                     />
                 )}
             </AnimatePresence>
+
+            {/* Architecture Visualization */}
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-12 mt-8">
+                <div className="mb-8 pl-1 border-l-4 border-blue-500">
+                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 ml-4">
+                        System Architecture
+                    </h2>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 ml-4">
+                        Real-time data flow and processing pipeline visualization.
+                    </p>
+                </div>
+                <ArchitectureViz />
+            </div>
 
             {/* Footer */}
             <div className="w-full text-center py-8 border-t border-zinc-200 dark:border-zinc-800 mt-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
