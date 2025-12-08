@@ -93,6 +93,68 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
         }
     }, []);
 
+    // Auto-load random audio file if not Custom mode
+    useEffect(() => {
+        const isCustom = unitName === "Custom Input Stream";
+        
+        if (!isCustom && status === 'idle' && !analysisData) {
+            // Auto-load random audio file
+            const loadRandomAudio = async () => {
+                try {
+                    setStatus('uploading');
+                    
+                    // List of available audio files
+                    const audioFiles = [
+                        'audio_000001.wav',
+                        'audio_000002.wav',
+                        'audio_000003.wav',
+                        'audio_000004.wav',
+                        'audio_000005.wav',
+                        'audio_000006.wav',
+                        'audio_000009.wav',
+                        'mixed_000007.wav',
+                        'mixed_000008.wav'
+                    ];
+                    
+                    // Randomly select an audio file
+                    const randomIndex = Math.floor(Math.random() * audioFiles.length);
+                    const selectedFile = audioFiles[randomIndex];
+                    console.log(`[Non-Custom Mode] Auto-loading random audio file: ${selectedFile}`);
+                    
+                    // Fetch the audio file
+                    const audioUrl = `/audios/${selectedFile}`;
+                    const response = await fetch(audioUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch audio file: ${selectedFile}`);
+                    }
+                    
+                    const audioBlob = await response.blob();
+                    const audioFile = new File([audioBlob], selectedFile, { type: 'audio/wav' });
+                    
+                    // Process the audio file
+                    const rawData = await processAudio(audioFile);
+                    console.log("Raw API Response:", rawData);
+
+                    // Store the raw data
+                    setAnalysisData(rawData);
+                    
+                    // Adapt to lib format and convert to DatasetSample format
+                    const adapted = adaptToLibFormat(rawData);
+                    const mapped = mapApiResponseToDatasetSample(adapted, audioFile.name);
+                    setDatasetSample(mapped);
+                    setStatus('done');
+                } catch (err: any) {
+                    console.error("Auto-load audio failed:", err);
+                    setErrorMsg(err.message || "Failed to auto-load audio file");
+                    setStatus('error');
+                }
+            };
+            
+            loadRandomAudio();
+        }
+    }, [unitName, status, analysisData]);
+
     // Save cache on update
     useEffect(() => {
         if (analysisData) {
@@ -279,7 +341,7 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col relative overflow-hidden bg-white dark:bg-zinc-950">
-                {status === 'idle' && (
+                {status === 'idle' && unitName === "Custom Input Stream" && (
                     <div className="flex-1 flex flex-col items-center justify-center p-8 border-dashed border-2 border-zinc-200 dark:border-zinc-800 m-8 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/20">
                         <Waves size={64} className="text-zinc-300 dark:text-zinc-700 mb-6" />
                         <h2 className="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">Upload Audio Stream</h2>
@@ -299,7 +361,7 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
                             <Activity size={64} className="text-blue-600 dark:text-blue-400 relative z-10 animate-bounce" />
                         </div>
                         <h2 className="mt-8 text-2xl font-light text-zinc-600 dark:text-zinc-300 animate-pulse">
-                            Processing Signal...
+                            Processing Audio File...
                         </h2>
                     </div>
                 )}

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { EncryptionLockIcon } from "@/components/ui/EncryptionLockIcon";
 import Providers from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -36,6 +37,7 @@ export default function RootLayout({
               <Toaster />
               <Sonner />
               {children}
+              <EncryptionLockIcon />
             </TooltipProvider>
           </ThemeProvider>
         </Providers>

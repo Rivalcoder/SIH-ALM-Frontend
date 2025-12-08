@@ -1,6 +1,32 @@
 const fs = require('fs');
 const path = require('path');
 
+// Check if running in Custom mode
+const isCustom = process.argv.includes('--custom') || process.env.CUSTOM === 'true';
+
+// If not Custom, randomly select an audio file from public/audios
+let selectedAudioFile = null;
+if (!isCustom) {
+    const audiosDir = path.join(__dirname, '../public/audios');
+    try {
+        const audioFiles = fs.readdirSync(audiosDir).filter(file => 
+            file.endsWith('.wav') || file.endsWith('.mp3') || file.endsWith('.m4a')
+        );
+        
+        if (audioFiles.length > 0) {
+            const randomIndex = Math.floor(Math.random() * audioFiles.length);
+            selectedAudioFile = audioFiles[randomIndex];
+            console.log(`[Non-Custom Mode] Randomly selected audio file: ${selectedAudioFile}`);
+        } else {
+            console.log('[Non-Custom Mode] No audio files found in public/audios directory');
+        }
+    } catch (error) {
+        console.error('[Non-Custom Mode] Error reading audios directory:', error.message);
+    }
+} else {
+    console.log('[Custom Mode] Running in custom mode - skipping random audio selection');
+}
+
 // Helper to generate 24h timeframes
 function generate24hTimeframes(spotId) {
     const timeframes = [];

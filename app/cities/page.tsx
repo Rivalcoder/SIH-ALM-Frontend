@@ -91,7 +91,7 @@ export default function CitiesPage() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsQuickAnalysisOpen(true)}
-                className="fixed bottom-8 right-8 z-50 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center group"
+                className="fixed bottom-16 mr-8 right-8 z-50 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center group"
             >
                 <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
                 <span className="absolute right-full mr-4 bg-zinc-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">

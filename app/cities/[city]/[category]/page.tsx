@@ -330,10 +330,6 @@ export default function CategoryDetailsPage() {
                     <span className="font-semibold text-blue-600 dark:text-blue-400 capitalize">{categoryId}</span>
                 </div>
                 <div className="ml-auto flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">System Active</span>
-                    </div>
                 </div>
             </header>
 
@@ -423,12 +419,6 @@ export default function CategoryDetailsPage() {
                                         </div>
                                         <div className="flex-1">
                                             <div className="font-semibold text-sm">{sub.name}</div>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className={`w-1.5 h-1.5 rounded-full ${sub.status === 'Operational' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                                                <div className={`text-[10px] uppercase tracking-wider font-semibold ${selectedSubItem?.id === sub.id ? 'opacity-80' : 'text-zinc-500'}`}>
-                                                    {sub.status}
-                                                </div>
-                                            </div>
                                         </div>
                                     </button>
                                 ))}
@@ -488,12 +478,6 @@ export default function CategoryDetailsPage() {
                                                     <span className={`font-mono text-xs font-medium ${selectedTimeframe === tf.id ? 'text-blue-600 dark:text-blue-400' : ''}`}>
                                                         {tf.label}
                                                     </span>
-                                                    {tf.status === 'analyzed' && (
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Cleared</span>
-                                                            <CheckCircle2 size={14} className="text-emerald-500" />
-                                                        </div>
-                                                    )}
                                                     {tf.status === 'pending' && <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-700" />}
                                                 </button>
                                             ))}

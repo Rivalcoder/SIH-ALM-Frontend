@@ -74,12 +74,6 @@ const Column: React.FC<ColumnProps> = ({ depth, items = [], selectedId, onSelect
 
                             <div className="flex-1 min-w-0">
                                 <div className="truncate font-medium">{item.name}</div>
-                                {item.status && (
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                        <span className={`w-1.5 h-1.5 rounded-full ${['Active', 'Operational', 'Open'].includes(item.status) ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                                        <span className={`text-[10px] uppercase font-semibold opacity-80 ${isSelected ? 'text-blue-100' : 'text-zinc-400'}`}>{item.status}</span>
-                                    </div>
-                                )}
                             </div>
 
                             <ChevronRight
