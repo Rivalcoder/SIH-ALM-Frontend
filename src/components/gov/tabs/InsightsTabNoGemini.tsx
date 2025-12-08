@@ -21,14 +21,14 @@ export function InsightsTabNoGemini({ analysis }: InsightsTabNoGeminiProps) {
   const actionItems = useMemo(() => {
     const actionKeywords = ['will', 'should', 'must', 'need to', 'action', 'task', 'do', 'complete'];
     const items: string[] = [];
-    
+
     analysis.question_answer_pair.forEach((qa) => {
       const answer = qa.answer.toLowerCase();
       if (actionKeywords.some(keyword => answer.includes(keyword))) {
         items.push(qa.answer);
       }
     });
-    
+
     return items.length > 0 ? items : ['No specific action items identified from the analysis.'];
   }, [analysis]);
 
@@ -36,14 +36,14 @@ export function InsightsTabNoGemini({ analysis }: InsightsTabNoGeminiProps) {
   const keyDecisions = useMemo(() => {
     const decisionKeywords = ['decided', 'decision', 'chose', 'selected', 'determined', 'concluded'];
     const decisions: string[] = [];
-    
+
     analysis.question_answer_pair.forEach((qa) => {
       const answer = qa.answer.toLowerCase();
       if (decisionKeywords.some(keyword => answer.includes(keyword))) {
         decisions.push(qa.answer);
       }
     });
-    
+
     return decisions.length > 0 ? decisions : ['No key decisions were explicitly identified.'];
   }, [analysis]);
 

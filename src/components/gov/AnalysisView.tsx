@@ -9,7 +9,7 @@ import { ProcessAudioResponse as LibProcessAudioResponse } from "@/lib/api/types
 import { mapApiResponseToDatasetSample } from "@/lib/api/mapper";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { OverviewTabNoGemini } from "./tabs/OverviewTabNoGemini";
-import { InsightsTabNoGemini } from "./tabs/InsightsTabNoGemini";
+
 import { VisualizationsTab } from "@/components/analyze/tabs/VisualizationsTab";
 import { TranscriptView } from "@/components/analyze/TranscriptView";
 import { ChatInterface } from "@/components/analyze/ChatInterface";
@@ -29,7 +29,7 @@ function adaptToLibFormat(data: ServicesProcessAudioResponse | any): LibProcessA
     if (data.results && data.session_id && data.filename) {
         return data as LibProcessAudioResponse;
     }
-    
+
     // If data has root-level fields (old format), wrap them
     if (data.audio && data.transcription) {
         return {
@@ -45,7 +45,7 @@ function adaptToLibFormat(data: ServicesProcessAudioResponse | any): LibProcessA
             }
         };
     }
-    
+
     // Fallback: wrap everything in results
     return {
         session_id: data.session_id || `session-${Date.now()}`,
@@ -96,13 +96,13 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
     // Auto-load random audio file if not Custom mode
     useEffect(() => {
         const isCustom = unitName === "Custom Input Stream";
-        
+
         if (!isCustom && status === 'idle' && !analysisData) {
             // Auto-load random audio file
             const loadRandomAudio = async () => {
                 try {
                     setStatus('uploading');
-                    
+
                     // List of available audio files
                     const audioFiles = [
                         'audio_000001.wav',
@@ -115,30 +115,30 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
                         'mixed_000007.wav',
                         'mixed_000008.wav'
                     ];
-                    
+
                     // Randomly select an audio file
                     const randomIndex = Math.floor(Math.random() * audioFiles.length);
                     const selectedFile = audioFiles[randomIndex];
                     console.log(`[Non-Custom Mode] Auto-loading random audio file: ${selectedFile}`);
-                    
+
                     // Fetch the audio file
                     const audioUrl = `/audios/${selectedFile}`;
                     const response = await fetch(audioUrl);
-                    
+
                     if (!response.ok) {
                         throw new Error(`Failed to fetch audio file: ${selectedFile}`);
                     }
-                    
+
                     const audioBlob = await response.blob();
                     const audioFile = new File([audioBlob], selectedFile, { type: 'audio/wav' });
-                    
+
                     // Process the audio file
                     const rawData = await processAudio(audioFile);
                     console.log("Raw API Response:", rawData);
 
                     // Store the raw data
                     setAnalysisData(rawData);
-                    
+
                     // Adapt to lib format and convert to DatasetSample format
                     const adapted = adaptToLibFormat(rawData);
                     const mapped = mapApiResponseToDatasetSample(adapted, audioFile.name);
@@ -150,7 +150,7 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
                     setStatus('error');
                 }
             };
-            
+
             loadRandomAudio();
         }
     }, [unitName, status, analysisData]);
@@ -180,7 +180,7 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
 
             // Store the raw data
             setAnalysisData(rawData);
-            
+
             // Adapt to lib format and convert to DatasetSample format
             const adapted = adaptToLibFormat(rawData);
             const mapped = mapApiResponseToDatasetSample(adapted, file.name);
@@ -207,7 +207,7 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
     const tabs = [
         { id: "overview", label: "Overview", icon: Activity },
         { id: "transcript", label: "Transcript", icon: Waves },
-        { id: "insights", label: "Insights", icon: Activity },
+
         { id: "visualizations", label: "Charts", icon: Activity },
         { id: "chat", label: "Chat", icon: MessageSquare },
     ];
@@ -255,7 +255,7 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
         } catch (error) {
             console.error("Chat request failed:", error);
             const errorMessage = error instanceof Error ? error.message : "Failed to get AI response";
-            
+
             const errorResponse: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
@@ -386,7 +386,7 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
                         <div className="fixed bottom-4 right-4 lg:bottom-8 lg:right-8 z-10 group">
                             <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg shadow-lg border-2 border-green-500 dark:border-green-400 cursor-pointer transition-all hover:bg-green-100 dark:hover:bg-green-900/30 hover:shadow-xl">
                                 <Lock size={18} className="text-green-600 dark:text-green-400" />
-                                <span className="text-xs font-medium text-green-700 dark:text-green-300">Encrypted</span>
+                                {/*<span className="text-xs font-medium text-green-700 dark:text-green-300">Encrypted</span>*/}
                             </div>
                             {/* Tooltip on Hover */}
                             <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
@@ -497,18 +497,7 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
                                     </motion.div>
                                 )}
 
-                                {activeTab === "insights" && (
-                                    <motion.div
-                                        key="insights"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                                        className="pt-4"
-                                    >
-                                        <InsightsTabNoGemini analysis={datasetSample} />
-                                    </motion.div>
-                                )}
+
 
                                 {activeTab === "visualizations" && (
                                     <motion.div
@@ -541,7 +530,7 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
                             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[65]"
                             onClick={() => setActiveTab("overview")}
                         />
-                        
+
                         {/* Chat Panel - 60% width from right */}
                         <motion.div
                             initial={{ x: "100%" }}
@@ -550,50 +539,36 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
                             className="fixed inset-y-0 right-0 w-full md:w-[60%] bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl z-[70] flex flex-col"
                         >
-                            {/* Enhanced AI Assistant Header */}
-                            <motion.div
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                                className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-800 border-b-2 border-indigo-200/50 dark:border-zinc-700/50 backdrop-blur-sm shadow-sm"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <motion.div
-                                        whileHover={{ scale: 1.1, rotate: [0, -10, 10, -10, 0] }}
-                                        transition={{ duration: 0.5 }}
-                                        className="relative"
-                                    >
-                                        <motion.div
-                                            animate={{
-                                                scale: [1, 1.1, 1],
-                                                opacity: [0.3, 0.5, 0.3],
-                                            }}
-                                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                            className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl blur-lg"
-                                        />
-                                        <div className="relative p-3 rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-purple-600 shadow-xl border-2 border-white/20">
-                                            <MessageSquare size={24} className="text-white" />
-                                        </div>
-                                    </motion.div>
+                            {/* Enhanced AI Assistant Header - Official Style */}
+                            <div className="flex items-center justify-between px-6 py-4 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex-none">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-blue-900 rounded-sm flex items-center justify-center shadow-sm">
+                                        <MessageSquare size={20} className="text-white" />
+                                    </div>
                                     <div>
-                                        <h3 className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                            AI Assistant
+                                        <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                                            Analysis Assistant
                                         </h3>
-                                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5 font-medium">
-                                            Ask questions about your analysis
-                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                            <p className="text-xs text-zinc-500 font-medium">
+                                                Secure Connection Active
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                                <motion.button
-                                    whileHover={{ scale: 1.1, rotate: 90 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                    onClick={() => setActiveTab("overview")}
-                                    className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl"
-                                >
-                                    <X size={20} />
-                                </motion.button>
-                            </motion.div>
+                                <div className="flex items-center gap-4">
+                                    <span className="hidden sm:block text-[10px] font-bold text-zinc-400 uppercase tracking-widest border border-zinc-200 dark:border-zinc-700 px-2 py-1 rounded-sm">
+                                        Official Use Only
+                                    </span>
+                                    <button
+                                        onClick={() => setActiveTab("overview")}
+                                        className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-sm"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                            </div>
 
                             {/* Chat Content - Full Height */}
                             <div className="flex-1 overflow-hidden flex flex-col bg-zinc-50 dark:bg-zinc-900/30">

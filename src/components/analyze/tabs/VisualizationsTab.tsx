@@ -38,10 +38,10 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
     emotions?: Record<string, number>;
     dominant_emotion?: string;
   } | undefined;
-  
+
   const dominantEmotion = paralinguistics?.dominant_emotion || "neutral";
   const emotionScores = paralinguistics?.emotions || {};
-  
+
   // Format emotion name for display
   const formatEmotion = (emotion: string) => {
     return emotion.charAt(0).toUpperCase() + emotion.slice(1);
@@ -52,7 +52,7 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
     const paralinguistics = analysis.paralinguistics as {
       background_events?: Array<{ name: string; score: number }>;
     } | undefined;
-    
+
     if (paralinguistics?.background_events && Array.isArray(paralinguistics.background_events)) {
       // Convert scores to percentages and return
       return paralinguistics.background_events.map(event => ({
@@ -60,12 +60,12 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
         percentage: (event.score || 0) * 100
       }));
     }
-    
+
     // Fallback: Try to parse from Q&A if background_events not available
     const eventsQnA = analysis.question_answer_pair.find(
       (qa) => qa.question === "What audio events were detected?"
     );
-    
+
     if (!eventsQnA || !eventsQnA.answer) {
       return [];
     }
@@ -73,28 +73,28 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
     // Parse the answer string like "Speech (99.2%), Inside, small room (0.2%), Narration, monologue (0.1%)"
     const speechKeywords = ['speech', 'speaker', 'voice', 'narration', 'monologue', 'synthesizer'];
     const events: Array<{ name: string; percentage: number }> = [];
-    
+
     // Split by comma and parse each event
     const eventStrings = eventsQnA.answer.split(',').map(s => s.trim());
-    
+
     for (const eventStr of eventStrings) {
       // Match pattern like "Event Name (percentage%)"
       const match = eventStr.match(/^(.+?)\s*\(([\d.]+)%\)$/);
       if (match) {
         const eventName = match[1].trim();
         const percentage = parseFloat(match[2]);
-        
+
         // Skip speech-related events
-        const isSpeechEvent = speechKeywords.some(keyword => 
+        const isSpeechEvent = speechKeywords.some(keyword =>
           eventName.toLowerCase().includes(keyword)
         );
-        
+
         if (!isSpeechEvent && eventName && !isNaN(percentage)) {
           events.push({ name: eventName, percentage });
         }
       }
     }
-    
+
     // Sort by percentage descending
     return events.sort((a, b) => b.percentage - a.percentage);
   }, [analysis]);
@@ -102,103 +102,103 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
   return (
     <div className="w-full space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-      <ChartCard
-        title="Audio Metrics"
-        description="Duration and mixing ratios analysis"
-        index={0}
-      >
-        <div className="h-64 w-full bg-transparent">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={audioMetrics} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-              <XAxis
-                dataKey="name"
-                stroke="hsl(var(--foreground))"
-                fontSize={12}
-                tickLine={false}
-                tick={{ fill: "hsl(var(--foreground))" }}
-              />
-              <YAxis
-                stroke="hsl(var(--foreground))"
-                fontSize={12}
-                tickLine={false}
-                tick={{ fill: "hsl(var(--foreground))" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
-                  boxShadow: "0 4px 24px hsl(0 0% 0% / 0.1)",
-                  color: "hsl(var(--foreground))",
-                }}
-              />
-              <Bar
-                dataKey="value"
-                radius={[8, 8, 0, 0]}
-              >
-                {audioMetrics.map((entry, index) => {
-                  const colors = ["#8b5cf6", "#ec4899", "#06b6d4"];
-                  return (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={colors[index % colors.length]}
-                    />
-                  );
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
+        <ChartCard
+          title="Audio Metrics"
+          description="Duration and mixing ratios analysis"
+          index={0}
+        >
+          <div className="h-64 w-full bg-transparent">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={audioMetrics} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+                <XAxis
+                  dataKey="name"
+                  stroke="hsl(var(--foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  tick={{ fill: "hsl(var(--foreground))" }}
+                />
+                <YAxis
+                  stroke="hsl(var(--foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  tick={{ fill: "hsl(var(--foreground))" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "var(--radius)",
+                    boxShadow: "0 4px 24px hsl(0 0% 0% / 0.1)",
+                    color: "hsl(var(--foreground))",
+                  }}
+                />
+                <Bar
+                  dataKey="value"
+                  radius={[8, 8, 0, 0]}
+                >
+                  {audioMetrics.map((entry, index) => {
+                    const colors = ["#8b5cf6", "#ec4899", "#06b6d4"];
+                    return (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={colors[index % colors.length]}
+                      />
+                    );
+                  })}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
 
-      <ChartCard
-        title="Speaker Duration Distribution"
-        description="Time each speaker was active"
-        index={1}
-      >
-        <div className="h-64 w-full bg-transparent">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={speakerData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-              <XAxis
-                dataKey="name"
-                stroke="hsl(var(--foreground))"
-                fontSize={12}
-                tickLine={false}
-                tick={{ fill: "hsl(var(--foreground))" }}
-              />
-              <YAxis
-                stroke="hsl(var(--foreground))"
-                fontSize={12}
-                tickLine={false}
-                tick={{ fill: "hsl(var(--foreground))" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
-                  boxShadow: "0 4px 24px hsl(0 0% 0% / 0.1)",
-                  color: "hsl(var(--foreground))",
-                }}
-              />
-              <Bar
-                dataKey="duration"
-                radius={[8, 8, 0, 0]}
-              >
-                {speakerData.map((entry, index) => {
-                  const colors = ["#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"];
-                  return (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={colors[index % colors.length]}
-                    />
-                  );
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
+        <ChartCard
+          title="Speaker Duration Distribution"
+          description="Time each speaker was active"
+          index={1}
+        >
+          <div className="h-64 w-full bg-transparent">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={speakerData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+                <XAxis
+                  dataKey="name"
+                  stroke="hsl(var(--foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  tick={{ fill: "hsl(var(--foreground))" }}
+                />
+                <YAxis
+                  stroke="hsl(var(--foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  tick={{ fill: "hsl(var(--foreground))" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "var(--radius)",
+                    boxShadow: "0 4px 24px hsl(0 0% 0% / 0.1)",
+                    color: "hsl(var(--foreground))",
+                  }}
+                />
+                <Bar
+                  dataKey="duration"
+                  radius={[8, 8, 0, 0]}
+                >
+                  {speakerData.map((entry, index) => {
+                    const colors = ["#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"];
+                    return (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={colors[index % colors.length]}
+                      />
+                    );
+                  })}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
       </div>
 
       {/* Emotion and Background Events Summary */}
@@ -243,11 +243,10 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
                                 initial={{ width: 0 }}
                                 animate={{ width: `${percentage}%` }}
                                 transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                                className={`h-full rounded-full ${
-                                  isDominant 
-                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500' 
+                                className={`h-full rounded-full ${isDominant
+                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500'
                                     : 'bg-gradient-to-r from-gray-400 to-gray-500'
-                                }`}
+                                  }`}
                               />
                             </div>
                           </div>
@@ -268,7 +267,7 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
                       <div key={index} className="space-y-1.5">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium text-foreground">
-                            {event.name.split(", ").map(word => 
+                            {event.name.split(", ").map(word =>
                               word.charAt(0).toUpperCase() + word.slice(1)
                             ).join(", ")}
                           </span>
@@ -291,7 +290,7 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium text-foreground">
-                          {analysis.audio_event.replace(/_/g, " ").split(" ").map(word => 
+                          {analysis.audio_event.replace(/_/g, " ").split(" ").map(word =>
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(" ")}
                         </span>
