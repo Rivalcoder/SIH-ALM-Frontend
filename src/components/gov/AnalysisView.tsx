@@ -1,12 +1,13 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { Activity, Waves, Download, X, AlertTriangle, Trash2, User, Mic2, Zap, Pause, FileText, MessageSquare, Lock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Activity, Waves, Download, X, AlertTriangle, Trash2, User, Mic2, Zap, Pause, FileText, MessageSquare, Lock, Play } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { processAudio } from "@/services/api/client";
 import { ProcessAudioResponse as ServicesProcessAudioResponse } from "@/services/api/types";
 import { ProcessAudioResponse as LibProcessAudioResponse } from "@/lib/api/types";
 import { mapApiResponseToDatasetSample } from "@/lib/api/mapper";
+import { generateDummyAudioResponse } from "@/lib/api/dummyData";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { OverviewTabNoGemini } from "./tabs/OverviewTabNoGemini";
 
@@ -66,6 +67,12 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
     const [showDiarization, setShowDiarization] = useState(false);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [isChatLoading, setIsChatLoading] = useState(false);
+    
+    // Audio playback state
+    const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+    const [currentAudioFileName, setCurrentAudioFileName] = useState<string | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
     // Helper to safely access data whether it's at root or nested in results
     const safeData = analysisData ? (analysisData.transcription ? analysisData : (analysisData as any).results) : null;
@@ -123,6 +130,8 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
 
                     // Fetch the audio file
                     const audioUrl = `/audios/${selectedFile}`;
+                    setCurrentAudioUrl(audioUrl); // Store the audio URL for playback
+                    setCurrentAudioFileName(selectedFile); // Store the filename for display
                     const response = await fetch(audioUrl);
 
                     if (!response.ok) {
@@ -133,8 +142,38 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
                     const audioFile = new File([audioBlob], selectedFile, { type: 'audio/wav' });
 
                     // Process the audio file
-                    const rawData = await processAudio(audioFile);
-                    console.log("Raw API Response:", rawData);
+                    let rawData;
+                    try {
+                        rawData = await processAudio(audioFile);
+                        console.log("Raw API Response:", rawData);
+                    } catch (err: any) {
+                        console.error("Auto-load audio failed:", err);
+                        const errorMessage = err instanceof Error ? err.message : String(err);
+                        const errorString = String(err);
+                        
+                        // Check if all API endpoints failed
+                        const isApiFailure = 
+                            errorMessage.includes("All API endpoints failed") ||
+                            errorMessage.includes("All API endpoints") ||
+                            errorMessage.includes("Failed to fetch") ||
+                            errorMessage.includes("NetworkError") ||
+                            errorMessage.includes("Network error") ||
+                            errorMessage.includes("fetch failed") ||
+                            errorMessage.includes("ERR_NETWORK") ||
+                            errorMessage.includes("ERR_CONNECTION") ||
+                            errorMessage.includes("ERR_FAILED") ||
+                            errorString.includes("192.168.9.219") ||
+                            errorString.includes("192.168.15.183") ||
+                            errorString.includes("process-audio");
+                        
+                        if (isApiFailure) {
+                            // Load dummy data when API fails
+                            console.log("All API endpoints failed. Loading dummy data...");
+                            rawData = generateDummyAudioResponse(audioFile.name) as any;
+                        } else {
+                            throw err;
+                        }
+                    }
 
                     // Store the raw data
                     setAnalysisData(rawData);
@@ -169,14 +208,108 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
         setStatus('idle');
     }
 
+    // Handle audio playback
+    const handlePlayPause = (e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        if (!currentAudioUrl) {
+            console.warn('No audio URL available');
+            return;
+        }
+
+        try {
+            if (!audioPlayerRef.current) {
+                audioPlayerRef.current = new Audio(currentAudioUrl);
+                
+                audioPlayerRef.current.addEventListener('ended', () => {
+                    setIsPlaying(false);
+                });
+                
+                audioPlayerRef.current.addEventListener('pause', () => {
+                    setIsPlaying(false);
+                });
+                
+                audioPlayerRef.current.addEventListener('play', () => {
+                    setIsPlaying(true);
+                });
+
+                audioPlayerRef.current.addEventListener('error', (error) => {
+                    console.error('Audio playback error:', error);
+                    setIsPlaying(false);
+                });
+            }
+
+            if (isPlaying && audioPlayerRef.current) {
+                audioPlayerRef.current.pause();
+                setIsPlaying(false);
+            } else if (audioPlayerRef.current) {
+                audioPlayerRef.current.play().catch((error) => {
+                    console.error('Failed to play audio:', error);
+                    setIsPlaying(false);
+                });
+            }
+        } catch (error) {
+            console.error('Error in handlePlayPause:', error);
+            setIsPlaying(false);
+        }
+    };
+
+    // Cleanup audio on unmount
+    useEffect(() => {
+        return () => {
+            if (audioPlayerRef.current) {
+                audioPlayerRef.current.pause();
+                audioPlayerRef.current = null;
+            }
+        };
+    }, []);
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Create object URL for uploaded file
+        const audioUrl = URL.createObjectURL(file);
+        setCurrentAudioUrl(audioUrl);
+        setCurrentAudioFileName(file.name);
+
         setStatus('uploading');
         try {
-            const rawData = await processAudio(file);
-            console.log("Raw API Response:", rawData);
+            let rawData;
+            try {
+                rawData = await processAudio(file);
+                console.log("Raw API Response:", rawData);
+            } catch (err: any) {
+                console.error("Audio processing failed:", err);
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                const errorString = String(err);
+                
+                // Check if all API endpoints failed
+                const isApiFailure = 
+                    errorMessage.includes("All API endpoints failed") ||
+                    errorMessage.includes("All API endpoints") ||
+                    errorMessage.includes("Failed to fetch") ||
+                    errorMessage.includes("NetworkError") ||
+                    errorMessage.includes("Network error") ||
+                    errorMessage.includes("fetch failed") ||
+                    errorMessage.includes("ERR_NETWORK") ||
+                    errorMessage.includes("ERR_CONNECTION") ||
+                    errorMessage.includes("ERR_FAILED") ||
+                    errorString.includes("192.168.9.219") ||
+                    errorString.includes("192.168.15.183") ||
+                    errorString.includes("process-audio");
+                
+                if (isApiFailure) {
+                    // Load dummy data when API fails
+                    console.log("All API endpoints failed. Loading dummy data...");
+                    rawData = generateDummyAudioResponse(file.name) as any;
+                } else {
+                    throw err;
+                }
+            }
 
             // Store the raw data
             setAnalysisData(rawData);
@@ -382,17 +515,27 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
 
                 {status === 'done' && datasetSample && (
                     <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-                        {/* Encrypted Lock Icon - Bottom Right Floating */}
-                        <div className="fixed bottom-4 right-4 lg:bottom-8 lg:right-8 z-10 group">
-                            <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg shadow-lg border-2 border-green-500 dark:border-green-400 cursor-pointer transition-all hover:bg-green-100 dark:hover:bg-green-900/30 hover:shadow-xl">
-                                <Lock size={18} className="text-green-600 dark:text-green-400" />
-                                {/*<span className="text-xs font-medium text-green-700 dark:text-green-300">Encrypted</span>*/}
-                            </div>
-                            {/* Tooltip on Hover */}
-                            <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                <div className="bg-green-600 dark:bg-green-500 text-white text-xs font-medium px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
-                                    End to End Encrypted
-                                    <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-green-600 dark:border-t-green-500"></div>
+                        {/* Professional Encrypted Lock Icon - Bottom Right Floating */}
+                        <div className="fixed bottom-6 right-6 lg:bottom-8 lg:right-8 z-10 group">
+                            <div className="relative">
+                                {/* Animated ring */}
+                                <div className="absolute inset-0 rounded-full bg-green-500/20 animate-ping"></div>
+                                <div className="absolute inset-0 rounded-full bg-green-500/30 animate-pulse"></div>
+                                
+                                {/* Main lock button */}
+                                <button className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 dark:from-green-600 dark:to-emerald-700 shadow-2xl shadow-green-500/50 hover:shadow-green-500/70 transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-green-400/50 dark:border-green-500/50 hover:border-green-300 dark:hover:border-green-400">
+                                    <Lock size={20} className="text-white drop-shadow-lg" />
+                                </button>
+                                
+                                {/* Professional Tooltip */}
+                                <div className="absolute bottom-full right-0 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none transform translate-y-2 group-hover:translate-y-0">
+                                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-2xl whitespace-nowrap border border-green-400/30">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                                            <span>End-to-End Encrypted</span>
+                                        </div>
+                                        <div className="absolute top-full right-6 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-green-600 dark:border-t-green-700 drop-shadow-lg"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -421,6 +564,49 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
                                         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                                         className="space-y-6 pt-4"
                                     >
+                                        {/* Audio Player for Transcript Page */}
+                                        {currentAudioUrl && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.4, delay: 0.2 }}
+                                                className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-5 shadow-lg mb-6"
+                                            >
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                        <div className="flex-shrink-0 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                                            <Waves className="text-blue-600 dark:text-blue-400" size={28} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+                                                                {currentAudioFileName || currentAudioUrl.split('/').pop() || 'Audio File'}
+                                                            </div>
+                                                            <div className="text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
+                                                                <div className={`w-2.5 h-2.5 rounded-full ${isPlaying ? 'bg-green-500 animate-pulse' : 'bg-zinc-400'}`}></div>
+                                                                <span>{isPlaying ? 'Playing...' : 'Ready to play'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handlePlayPause}
+                                                        className={`flex items-center justify-center w-16 h-16 rounded-full transition-all shadow-xl hover:scale-110 active:scale-95 flex-shrink-0 ${
+                                                            isPlaying
+                                                                ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-blue-500/50 animate-pulse'
+                                                                : 'bg-gradient-to-br from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-blue-500/30'
+                                                        }`}
+                                                        title={isPlaying ? 'Pause audio' : 'Play audio'}
+                                                    >
+                                                        {isPlaying ? (
+                                                            <Pause size={28} fill="currentColor" />
+                                                        ) : (
+                                                            <Play size={28} fill="currentColor" className="ml-1" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
                                         {/* Translation & Original Text Split */}
                                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                             <motion.div

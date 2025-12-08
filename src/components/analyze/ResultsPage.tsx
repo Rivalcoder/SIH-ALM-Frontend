@@ -94,7 +94,7 @@ export function ResultsPage({
   const contentRef = useRef<HTMLDivElement>(null);
   const headerNavRef = useRef<HTMLDivElement>(null);
   const [headerNavHeight, setHeaderNavHeight] = useState(320);
-  
+
   // Measure header+nav height
   useEffect(() => {
     const updateHeight = () => {
@@ -103,41 +103,41 @@ export function ResultsPage({
         setHeaderNavHeight(height);
       }
     };
-    
+
     updateHeight();
     window.addEventListener('resize', updateHeight);
     return () => window.removeEventListener('resize', updateHeight);
   }, [isHeaderVisible, isNavVisible]);
-  
+
   useEffect(() => {
     const contentElement = contentRef.current;
     if (!contentElement) return;
 
     let rafId: number | null = null;
     let lastHeaderState = { header: true, nav: true };
-    
+
     const handleScroll = () => {
       if (rafId !== null) return;
-      
+
       rafId = requestAnimationFrame(() => {
         const currentScrollY = contentElement.scrollTop;
-        
+
         // Only update state if it actually changed to avoid unnecessary re-renders
         let newHeaderState = { header: false, nav: false };
-        
+
         // Show header and nav only when at the very top (within 10px threshold)
         if (currentScrollY <= 10) {
           newHeaderState = { header: true, nav: true };
         }
-        
+
         // Only update state if changed
-        if (newHeaderState.header !== lastHeaderState.header || 
-            newHeaderState.nav !== lastHeaderState.nav) {
+        if (newHeaderState.header !== lastHeaderState.header ||
+          newHeaderState.nav !== lastHeaderState.nav) {
           setIsHeaderVisible(newHeaderState.header);
           setIsNavVisible(newHeaderState.nav);
           lastHeaderState = newHeaderState;
         }
-        
+
         lastScrollYRef.current = currentScrollY;
         rafId = null;
       });
@@ -163,23 +163,23 @@ export function ResultsPage({
   useEffect(() => {
     const headerNavElement = headerNavRef.current;
     const contentElement = contentRef.current;
-    
+
     if (!headerNavElement || !contentElement) return;
 
     let rafId: number | null = null;
     const handleWheel = (e: WheelEvent) => {
       const target = e.target as HTMLElement;
-      
+
       // Only forward if not over a button (buttons handle their own events)
       if (target.tagName === 'BUTTON' || target.closest('button')) {
         return;
       }
-      
+
       // Cancel any pending scroll update
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
-      
+
       // Use requestAnimationFrame for smooth scrolling
       rafId = requestAnimationFrame(() => {
         const currentScroll = contentElement.scrollTop;
@@ -187,12 +187,12 @@ export function ResultsPage({
         contentElement.scrollTop = newScroll;
         rafId = null;
       });
-      
+
       e.preventDefault();
     };
 
     headerNavElement.addEventListener('wheel', handleWheel, { passive: false });
-    
+
     return () => {
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
@@ -267,7 +267,7 @@ export function ResultsPage({
     } catch (error) {
       console.error("Chat request failed:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to get AI response";
-      
+
       const errorResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -276,7 +276,7 @@ export function ResultsPage({
       };
 
       setChatMessages((prev) => [...prev, errorResponse]);
-      
+
       toast({
         variant: "destructive",
         title: "Chat Error",
@@ -294,14 +294,14 @@ export function ResultsPage({
       {/* Premium Animated Background - Matching landing page style */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         {/* Animated gradient background */}
-        <div 
+        <div
           className="absolute inset-0 animated-gradient"
           style={{
             transform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
           }}
         />
-        
+
         {/* Simplified static gradient orbs - Performance optimized */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Top left orb - Static with reduced blur */}
@@ -313,7 +313,7 @@ export function ResultsPage({
               backfaceVisibility: 'hidden',
             }}
           />
-          
+
           {/* Bottom right orb - Static with reduced blur */}
           <div
             className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-2xl opacity-30"
@@ -327,7 +327,7 @@ export function ResultsPage({
 
         {/* Subtle grid pattern overlay */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]">
-          <div 
+          <div
             className="w-full h-full"
             style={{
               backgroundImage: `
@@ -341,8 +341,8 @@ export function ResultsPage({
       </div>
 
       {/* Premium Header Section - Glass morphism with smooth animations */}
-      <div 
-        ref={headerNavRef} 
+      <div
+        ref={headerNavRef}
         className="absolute top-0 left-0 right-0 z-[45]"
         style={{ pointerEvents: 'none' }}
       >
@@ -379,7 +379,7 @@ export function ResultsPage({
                   <span className="text-xs font-semibold text-accent tracking-wide">AUDIO INTELLIGENCE</span>
                 </div>
               </motion.div>
-              
+
               {/* Main Title with Gradient */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -429,13 +429,13 @@ export function ResultsPage({
       </div>
 
       {/* Main Content Area - Scrollable container */}
-      <main 
+      <main
         ref={contentRef}
         className={cn(
           "relative w-full flex-1",
           activeTab === "chat" && isChatScrolling ? "overflow-hidden" : "overflow-y-auto"
         )}
-        style={{ 
+        style={{
           paddingTop: activeTab === "chat" && isChatScrolling ? '0' : `${headerNavHeight}px`,
           scrollBehavior: 'auto',
           WebkitOverflowScrolling: 'touch',

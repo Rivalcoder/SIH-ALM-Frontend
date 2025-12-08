@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, Home, ChevronLeft } from "lucide-react";
+import { ChevronRight, Home, ChevronLeft, Play, Pause } from "lucide-react";
 
 interface MenuItem {
     id: string;
@@ -20,10 +20,13 @@ interface ColumnProps {
     onSelect: (item: MenuItem) => void;
     title: string;
     loading?: boolean;
+    playingTimeframe?: string | null;
+    onPlayAudio?: (e: React.MouseEvent, itemId: string) => void;
 }
 
-const Column: React.FC<ColumnProps> = ({ depth, items = [], selectedId, onSelect, title }) => {
+const Column: React.FC<ColumnProps> = ({ depth, items = [], selectedId, onSelect, title, playingTimeframe, onPlayAudio }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const isTimeframesColumn = depth === 3; // Timeframes are at depth 3
 
     // Auto-scroll to ensure latest panel is visible
     useEffect(() => {
@@ -55,32 +58,67 @@ const Column: React.FC<ColumnProps> = ({ depth, items = [], selectedId, onSelect
                 {(items || []).map((item) => {
                     const isSelected = selectedId === item.id;
                     const Icon = item.icon;
+                    const isPlaying = playingTimeframe === item.id;
 
                     return (
-                        <button
+                        <div
                             key={item.id}
-                            onClick={() => onSelect(item)}
-                            className={`
-                w-full group flex items-center text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border
-                ${isSelected
+                            className={`w-full group flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border ${
+                                isSelected
                                     ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20'
                                     : 'bg-transparent border-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700'
-                                }
-              `}
+                            }`}
                         >
-                            <div className={`p-1.5 rounded-md mr-3 transition-colors ${isSelected ? 'bg-blue-500 text-blue-100' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}>
-                                {Icon ? <Icon size={16} /> : <div className="w-4 h-4 bg-zinc-300 rounded" />}
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => onSelect(item)}
+                                className={`flex-1 flex items-center text-left min-w-0 ${
+                                    isSelected ? 'text-white' : ''
+                                }`}
+                            >
+                                <div className={`p-1.5 rounded-md mr-3 transition-colors flex-shrink-0 ${
+                                    isSelected ? 'bg-blue-500 text-blue-100' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                                }`}>
+                                    {Icon ? <Icon size={16} /> : <div className="w-4 h-4 bg-zinc-300 rounded" />}
+                                </div>
 
-                            <div className="flex-1 min-w-0">
-                                <div className="truncate font-medium">{item.name}</div>
-                            </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="truncate font-medium">{item.name}</div>
+                                </div>
 
-                            <ChevronRight
-                                size={16}
-                                className={`flex-none ml-2 transition-transform ${isSelected ? 'text-white' : 'text-zinc-300 opacity-0 group-hover:opacity-100'}`}
-                            />
-                        </button>
+                                {!isTimeframesColumn && (
+                                    <ChevronRight
+                                        size={16}
+                                        className={`flex-none ml-2 transition-transform ${
+                                            isSelected ? 'text-white' : 'text-zinc-300 opacity-0 group-hover:opacity-100'
+                                        }`}
+                                    />
+                                )}
+                            </button>
+
+                            {/* Play button - only show for timeframes, positioned on the right */}
+                            {isTimeframesColumn && onPlayAudio && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => onPlayAudio(e, item.id)}
+                                    className={`flex items-center justify-center w-8 h-8 rounded-md transition-all flex-shrink-0 ml-2 ${
+                                        isPlaying
+                                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
+                                            : isSelected
+                                            ? 'bg-blue-500/80 text-white hover:bg-blue-400'
+                                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-600'
+                                    }`}
+                                    title={isPlaying ? 'Pause audio' : 'Play audio'}
+                                    aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
+                                >
+                                    {isPlaying ? (
+                                        <Pause size={14} fill="currentColor" />
+                                    ) : (
+                                        <Play size={14} fill="currentColor" className="ml-0.5" />
+                                    )}
+                                </button>
+                            )}
+                        </div>
                     );
                 })}
                 {(!items || items.length === 0) && (
