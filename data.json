@@ -1,0 +1,343 @@
+{
+    "cities": [
+        {
+            "id": "delhi",
+            "name": "Delhi",
+            "description": "The Capital City of India",
+            "sectors": [
+                {
+                    "id": "airports",
+                    "title": "Airports",
+                    "icon": "Plane",
+                    "capacity": "65M Passengers",
+                    "utilization": "78%",
+                    "facilities": "3 Terminals",
+                    "places": [
+                        {
+                            "id": "del-t3",
+                            "name": "Terminal 3 Hub",
+                            "status": "Active",
+                            "type": "Infrastructure",
+                            "spots": [
+                                {
+                                    "id": "t3-g1",
+                                    "name": "Gate 1 Entry",
+                                    "status": "Operational",
+                                    "timeframes": [
+                                        {
+                                            "id": "tf-09",
+                                            "name": "09:00 - 10:00",
+                                            "status": "Analyzed",
+                                            "risk": "Low"
+                                        },
+                                        {
+                                            "id": "tf-10",
+                                            "name": "10:00 - 11:00",
+                                            "status": "Processing",
+                                            "risk": "Unknown"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "t3-sec",
+                                    "name": "Security Zone A",
+                                    "status": "Operational",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "railways",
+                    "title": "Railways",
+                    "icon": "Train",
+                    "capacity": "500+ Trains",
+                    "utilization": "85%",
+                    "facilities": "4 Major Stations",
+                    "places": [
+                        {
+                            "id": "ndls-main",
+                            "name": "New Delhi Station",
+                            "status": "Active",
+                            "type": "Transport Hub",
+                            "spots": [
+                                {
+                                    "id": "pf-1",
+                                    "name": "Platform 1",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "malls",
+                    "title": "Shopping Malls",
+                    "icon": "ShoppingBag",
+                    "capacity": "200+ Stores",
+                    "utilization": "92%",
+                    "facilities": "15+ Malls",
+                    "places": [
+                        {
+                            "id": "lulu-del",
+                            "name": "Lulu Mall Delhi",
+                            "status": "Open",
+                            "type": "Commercial",
+                            "spots": [
+                                {
+                                    "id": "kfc-lulu",
+                                    "name": "KFC",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "mumbai",
+            "name": "Mumbai",
+            "description": "The City of Dreams",
+            "sectors": [
+                {
+                    "id": "airports",
+                    "title": "Airports",
+                    "icon": "Plane",
+                    "capacity": "50M Passengers",
+                    "utilization": "92%",
+                    "facilities": "2 Terminals",
+                    "places": [
+                        {
+                            "id": "bom-t2",
+                            "name": "Chhatrapati Shivaji T2",
+                            "status": "Active",
+                            "type": "International Hub",
+                            "spots": [
+                                {
+                                    "id": "t2-checkin",
+                                    "name": "Check-in Area C",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "railways",
+                    "title": "Railways",
+                    "icon": "Train",
+                    "capacity": "7.5M Commuters",
+                    "utilization": "99%",
+                    "facilities": "Suburban Network",
+                    "places": [
+                        {
+                            "id": "cst-main",
+                            "name": "CST Heritage",
+                            "status": "Active",
+                            "type": "UNESCO Site",
+                            "spots": [
+                                {
+                                    "id": "pf-1",
+                                    "name": "Platform 1",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "bangalore",
+            "name": "Bangalore",
+            "description": "The Silicon Valley of India",
+            "sectors": [
+                {
+                    "id": "it-parks",
+                    "title": "IT Clusters",
+                    "icon": "Building2",
+                    "capacity": "150+ Parks",
+                    "utilization": "95%",
+                    "facilities": "Tech Campuses",
+                    "places": [
+                        {
+                            "id": "ec-1",
+                            "name": "Electronic City",
+                            "status": "Active",
+                            "type": "Tech Hub",
+                            "spots": [
+                                {
+                                    "id": "gate-1",
+                                    "name": "Main Gate",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        },
+                        {
+                            "id": "manyata",
+                            "name": "Manyata Tech Park",
+                            "status": "Active",
+                            "type": "Tech Hub",
+                            "spots": [
+                                {
+                                    "id": "food-court",
+                                    "name": "Food Court",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "metro",
+                    "title": "Namma Metro",
+                    "icon": "Train",
+                    "capacity": "0.5M Daily",
+                    "utilization": "80%",
+                    "facilities": "2 Lines",
+                    "places": [
+                        {
+                            "id": "mg-road",
+                            "name": "MG Road Station",
+                            "status": "Active",
+                            "type": "Metro Station",
+                            "spots": [
+                                {
+                                    "id": "pf-up",
+                                    "name": "Platform Up",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "hyderabad",
+            "name": "Hyderabad",
+            "description": "City of Pearls & Cyberabad",
+            "sectors": [
+                {
+                    "id": "biotech",
+                    "title": "Genome Valley",
+                    "icon": "Stethoscope",
+                    "capacity": "100+ Labs",
+                    "utilization": "88%",
+                    "facilities": "Research Parks",
+                    "places": [
+                        {
+                            "id": "biopark-1",
+                            "name": "BioPark Phase 1",
+                            "status": "Active",
+                            "type": "Research",
+                            "spots": [
+                                {
+                                    "id": "lab-a",
+                                    "name": "Viral Lab A",
+                                    "status": "Restricted",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "airport-hyd",
+                    "title": "RGIA Airport",
+                    "icon": "Plane",
+                    "capacity": "25M Passengers",
+                    "utilization": "70%",
+                    "facilities": "Greenfield Airport",
+                    "places": [
+                        {
+                            "id": "rgia-term",
+                            "name": "Main Terminal",
+                            "status": "Active",
+                            "type": "Transport",
+                            "spots": [
+                                {
+                                    "id": "dep-gate",
+                                    "name": "Departure Gates",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "chennai",
+            "name": "Chennai",
+            "description": "Detroit of India",
+            "sectors": [
+                {
+                    "id": "ports",
+                    "title": "Seaports",
+                    "icon": "Ship",
+                    "capacity": "Major Cargo",
+                    "utilization": "82%",
+                    "facilities": "3 Major Ports",
+                    "places": [
+                        {
+                            "id": "chennai-port",
+                            "name": "Chennai Port Trust",
+                            "status": "Active",
+                            "type": "Logistics",
+                            "spots": [
+                                {
+                                    "id": "cont-term",
+                                    "name": "Container Terminal",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "kolkata",
+            "name": "Kolkata",
+            "description": "City of Joy",
+            "sectors": [
+                {
+                    "id": "metro-kol",
+                    "title": "Metro Railway",
+                    "icon": "Train",
+                    "capacity": "Oldest Metro",
+                    "utilization": "90%",
+                    "facilities": "North-South Corridor",
+                    "places": [
+                        {
+                            "id": "park-st",
+                            "name": "Park Street Station",
+                            "status": "Active",
+                            "type": "Transit",
+                            "spots": [
+                                {
+                                    "id": "ent-1",
+                                    "name": "Entry 1",
+                                    "status": "Active",
+                                    "timeframes": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

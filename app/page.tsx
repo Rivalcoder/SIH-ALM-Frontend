@@ -1,6 +1,5 @@
-import Landing from "@/pages/Landing";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <Landing />;
+  redirect("/cities");
 }
-
