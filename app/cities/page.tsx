@@ -20,7 +20,7 @@ export default function CitiesPage() {
             </div>
 
             <GovHeader
-                title="National Infrastructure Portal"
+                title="Ministry of Defence"
                 subtitle="Central Monitoring System"
                 showBack={false} // Main dashboard
             />
@@ -62,6 +62,8 @@ export default function CitiesPage() {
                                     <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                                         {city.name}
                                     </h3>
+
+                                    
 
                                     <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 flex-grow">
                                         {city.description}

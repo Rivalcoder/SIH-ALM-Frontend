@@ -43,9 +43,81 @@ export default function CityFinderPage() {
         'mixed_000008.wav'
     ];
 
+    // Map Bangalore folder structure to sectors/places/spots
+    const getBangaloreResource = (sectorId: string, placeId: string, spotId: string, type: 'image' | 'audio') => {
+        if (cityId !== 'bangalore') return null;
+
+        // Map sector IDs to folder names
+        const sectorMap: Record<string, string> = {
+            'bangalore-it_parks': 'it-parks',
+            'bangalore-metro': 'metro',
+            'bangalore-airports': 'airport',
+            'bangalore-startups': 'infra' // Assuming startups maps to infra
+        };
+
+        const folderName = sectorMap[sectorId];
+        if (!folderName) return null;
+
+        // For Bangalore, use the same audio file for all timeframes based on sector
+        if (type === 'audio') {
+            // Use the first available audio file in the folder for all timeframes
+            if (folderName === 'metro') return '/bangalore/metro/metro-audio.wav';
+            if (folderName === 'it-parks') return '/bangalore/it-parks/park1.wav';
+            if (folderName === 'airport') return '/bangalore/airport/airport.wav';
+            if (folderName === 'infra') return '/bangalore/infra/park.wav';
+        } else {
+            // For images - map places to specific images
+            if (folderName === 'it-parks') {
+                // Map IT Parks places to specific images
+                if (placeId === 'bangalore-it_parks-p0') return '/bangalore/it-parks/it-park1.1.png'; // Tech Zone A
+                if (placeId === 'bangalore-it_parks-p1') return '/bangalore/it-parks/it-park2.1.png'; // Cyber City
+                return '/bangalore/it-parks/it-park1.1.png'; // Default
+            }
+            if (folderName === 'metro') return '/bangalore/metro/metro.png';
+            if (folderName === 'airport') return '/bangalore/airport/airport.png';
+            if (folderName === 'infra') return '/bangalore/infra/park.png';
+        }
+
+        return null;
+    };
+
+    // Get image URL for a place in Bangalore
+    const getPlaceImage = (place: Place) => {
+        if (cityId !== 'bangalore' || !selectedSector) {
+            return undefined;
+        }
+
+        // Direct mapping for IT Parks places
+        if (selectedSector.id === 'bangalore-it_parks') {
+            // Map place IDs to their specific images
+            const placeImageMap: Record<string, string> = {
+                'bangalore-it_parks-p0': '/bangalore/it-parks/it-park1.1.png', // Tech Zone A
+                'bangalore-it_parks-p1': '/bangalore/it-parks/it-park2.1.png', // Cyber City
+            };
+            
+            const imageUrl = placeImageMap[place.id];
+            if (imageUrl) {
+                return imageUrl;
+            }
+        }
+
+        // For other sectors, use the general mapping
+        return getBangaloreResource(selectedSector.id, place.id, '', 'image');
+    };
+
     // Get audio file for a timeframe
     const getAudioFileForTimeframe = (tfId: string) => {
-        // Extract hour from timeframe ID (e.g., "tf-delhi-airports-p0-s1-00" -> 0)
+        // For Bangalore, use the same audio file for all timeframes based on sector
+        if (cityId === 'bangalore' && selectedSector) {
+            const audioFile = getBangaloreResource(selectedSector.id, selectedPlace?.id || '', selectedSpot?.id || '', 'audio');
+            if (audioFile) {
+                return audioFile;
+            }
+            // Fallback to metro audio if mapping fails
+            return '/bangalore/metro/metro-audio.wav';
+        }
+
+        // For other cities, use the original logic (cycle through different audio files)
         const hourMatch = tfId.match(/-(\d{2})$/);
         if (hourMatch) {
             const hour = parseInt(hourMatch[1]);
@@ -194,7 +266,8 @@ export default function CityFinderPage() {
                                     name: p.name,
                                     status: p.status,
                                     icon: Building2,
-                                    data: p
+                                    data: p,
+                                    imageUrl: getPlaceImage(p) // Add image URL for Bangalore places
                                 }))}
                             />
                         )}

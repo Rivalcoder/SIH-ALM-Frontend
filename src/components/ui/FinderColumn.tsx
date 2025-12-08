@@ -11,6 +11,7 @@ interface MenuItem {
     icon?: any;
     status?: string;
     data?: any;
+    imageUrl?: string; // For hover images
 }
 
 interface ColumnProps {
@@ -82,8 +83,21 @@ const Column: React.FC<ColumnProps> = ({ depth, items = [], selectedId, onSelect
                                     {Icon ? <Icon size={16} /> : <div className="w-4 h-4 bg-zinc-300 rounded" />}
                                 </div>
 
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 relative">
                                     <div className="truncate font-medium">{item.name}</div>
+                                    {/* Hover Image for places (depth 1) - appears below the name */}
+                                    {depth === 1 && item.imageUrl && (
+                                        <div className="absolute top-full left-0 mt-1 w-72 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-[100] pointer-events-none transform translate-y-1 group-hover:translate-y-0">
+                                            <img
+                                                src={item.imageUrl}
+                                                alt={item.name}
+                                                className="w-full h-40 object-cover"
+                                            />
+                                            <div className="p-2 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+                                                <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{item.name}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {!isTimeframesColumn && (
