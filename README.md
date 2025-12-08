@@ -41,6 +41,18 @@ NEXT_PUBLIC_API_BASE_URL=https://untraceable-tiara-fittingly.ngrok-free.dev
 # Secondary fallback URL (optional, defaults to http://localhost:8000)
 # The app will automatically try the secondary URL if the primary fails
 NEXT_PUBLIC_API_BASE_URL_SECONDARY=http://localhost:8000
+
+# Hosted Model API Configuration (for Chat functionality)
+# Model API URL (required for chat feature)
+MODEL_API_URL=https://your-hosted-model-api.com/chat
+# OR use NEXT_PUBLIC_MODEL_API_URL for client-side access
+# NEXT_PUBLIC_MODEL_API_URL=https://your-hosted-model-api.com/chat
+
+# Optional: API Key for model authentication
+MODEL_API_KEY=your-api-key-here
+
+# Optional: Additional headers as JSON string (e.g., '{"X-Custom-Header": "value"}')
+# MODEL_API_HEADER={"X-Custom-Header": "value"}
 ```
 
 ### API Fallback Mechanism
@@ -57,6 +69,25 @@ The application uses these URLs to communicate with the backend API for:
 - Chat functionality (`/chat`)
 - Health checks (`/health`)
 - Session management (`/session/{session_id}`)
+
+### Chat API with Hosted Model
+
+The chat feature (`/api/chat`) sends the complete audio processed response along with user prompts and system instructions to a hosted model API. The model URL is configured via:
+- `MODEL_API_URL` (server-side) or `NEXT_PUBLIC_MODEL_API_URL` (client-side)
+
+The API sends:
+- **audioData**: Complete audio analysis results (transcription, diarization, emotions, paralinguistics, etc.)
+- **prompt**: User's question/message
+- **systemInstruction**: System instructions for the AI model
+
+The hosted model should return a response in the format:
+```json
+{
+  "answer": "AI response text",
+  "model": "model-name",
+  "model_used": "model-name"
+}
+```
 
 ## Technologies
 

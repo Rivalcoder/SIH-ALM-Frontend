@@ -142,3 +142,32 @@ export async function deleteSession(sessionId: string): Promise<DeleteSessionRes
 
     return response.json();
 }
+
+/**
+ * Chat with AI using full audio processed response
+ * This sends the complete audio analysis data along with the prompt to a hosted model
+ */
+export async function chatWithAudioAnalysis(
+    audioData: any,
+    prompt: string,
+    systemInstruction?: string
+): Promise<ChatResponse> {
+    const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            audioData,
+            prompt,
+            systemInstruction,
+        }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+}

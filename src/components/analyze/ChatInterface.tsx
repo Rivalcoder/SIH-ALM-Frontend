@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { BotMessageSquare, User, Send, Loader } from "lucide-react";
+import { BotMessageSquare, User, Send, Loader, MessageSquare } from "lucide-react";
 import { ChatMessage } from "@/lib/analyzeTypes";
 import { cn } from "@/lib/utils";
 
@@ -136,224 +136,342 @@ export function ChatInterface({ messages, isLoading, onSubmit, onScrollChange }:
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        "w-full flex flex-col transition-all duration-300 mx-auto",
-        isScrolling ? "h-full max-w-full" : "h-auto max-w-[95%]"
-      )}
-      style={isScrolling ? { height: '100%', minHeight: '100%' } : { maxHeight: '600px' }}
-    >
-      <Card 
-        className="border border-border bg-card shadow-lg flex flex-col w-full overflow-hidden transition-all duration-300" 
-        style={isScrolling ? { 
-          height: '100%', 
-          minHeight: '100%',
-          display: 'flex',
-          flexDirection: 'column'
-        } : { 
-          height: '600px', 
-          maxHeight: '600px',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-border bg-background/95 backdrop-blur-sm shrink-0">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9 border border-border bg-accent/10">
-              <AvatarFallback className="bg-accent/10 text-accent">
-                <BotMessageSquare className="h-5 w-5" />
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-semibold text-base text-foreground">AI Assistant</h3>
-              <p className="text-xs text-muted-foreground">Ask questions about your analysis</p>
-            </div>
-          </div>
-        </div>
-
+    <div className="w-full h-full flex flex-col bg-gradient-to-b from-white to-zinc-50/50 dark:from-zinc-950 dark:to-zinc-900/50">
         {/* Messages Container */}
         <div 
           ref={messagesContainerRef}
-          className="overflow-y-auto bg-background"
+          className="flex-1 overflow-y-auto bg-transparent"
           style={{ 
             scrollBehavior: 'smooth',
             overflowY: 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
-            ...(isScrolling ? {
-              flex: '1 1 0',
-              minHeight: 0,
-              height: '100%'
-            } : {
-              flex: '1 1 0',
-              minHeight: 0,
-              height: 'calc(600px - 92px - 112px)', // 600px - header (~92px) - input area (~112px)
-              maxHeight: 'calc(600px - 92px - 112px)'
-            })
           }}
         >
-          <div className="w-full max-w-none px-6 py-6 space-y-6">
+          <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
             <AnimatePresence mode="popLayout">
               {messages.length === 0 ? (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center py-16 text-center"
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col items-center justify-center min-h-[60vh] text-center"
                 >
+                  {/* Animated AI Message Icon */}
                   <motion.div
-                    animate={{
-                      scale: [1, 1.05, 1],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="mb-6"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative mb-8"
                   >
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl" />
-                      <div className="relative p-4 rounded-full bg-accent/10 border border-accent/20">
-                        <BotMessageSquare className="h-12 w-12 text-accent" />
-                      </div>
+                    {/* Pulsing glow effect */}
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.3, 0.5, 0.3],
+                      }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full blur-3xl"
+                    />
+                    {/* Icon container */}
+                    <motion.div
+                      whileHover={{ scale: 1.05, rotate: [0, -5, 5, -5, 0] }}
+                      transition={{ duration: 0.5 }}
+                      className="relative p-6 rounded-3xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 shadow-2xl border-4 border-white/20 dark:border-zinc-800/50"
+                    >
+                      <BotMessageSquare className="h-16 w-16 text-white" />
+                    </motion.div>
+                  </motion.div>
+
+                  {/* Title with animation */}
+                  <motion.h3
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                  >
+                    AI Assistant
+                  </motion.h3>
+
+                  {/* Subtitle */}
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 mb-6 font-medium"
+                  >
+                    Ask questions about your analysis
+                  </motion.p>
+
+                  {/* Description with fade in */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                    className="max-w-2xl space-y-4"
+                  >
+                    <div className="bg-white/80 dark:bg-zinc-800/50 backdrop-blur-sm rounded-2xl p-6 border border-zinc-200/50 dark:border-zinc-700/50 shadow-lg">
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        Ask me anything about your audio analysis results. I&apos;m here to help you understand the insights.
+                      </p>
                     </div>
                   </motion.div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">
-                    Start a Conversation
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-md">
-                    Ask me anything about your audio analysis results. I&apos;m here to help you understand the insights.
-                  </p>
+
+                  {/* Animated suggestion chips */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                    className="mt-8 flex flex-wrap gap-3 justify-center max-w-2xl"
+                  >
+                    {[
+                      "What are the key insights?",
+                      "Explain the transcription",
+                      "Analyze the speakers"
+                    ].map((suggestion, idx) => (
+                      <motion.button
+                        key={suggestion}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.7 + idx * 0.1, duration: 0.3 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setInput(suggestion);
+                          setTimeout(() => {
+                            handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+                          }, 100);
+                        }}
+                        className="px-4 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full text-zinc-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 transition-all shadow-sm hover:shadow-md"
+                      >
+                        {suggestion}
+                      </motion.button>
+                    ))}
+                  </motion.div>
                 </motion.div>
               ) : (
                 messages.map((message, index) => (
                   <motion.div
                     key={message.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9, x: message.role === "user" ? 20 : -20 }}
+                    transition={{ 
+                      duration: 0.4,
+                      ease: [0.16, 1, 0.3, 1],
+                      delay: index * 0.05
+                    }}
                     className={cn(
                       "flex gap-4 items-start group",
                       message.role === "user" ? "flex-row-reverse" : "flex-row"
                     )}
                   >
-                    {/* Avatar */}
-                    <Avatar className={cn(
-                      "h-8 w-8 shrink-0 border",
-                      message.role === "user" 
-                        ? "bg-accent text-accent-foreground border-accent/20" 
-                        : "bg-muted border-border"
-                    )}>
-                      <AvatarFallback className={cn(
-                        message.role === "user" ? "bg-accent text-accent-foreground" : "bg-muted"
+                    {/* Avatar with animation */}
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: index * 0.05 + 0.2, type: "spring", stiffness: 200, damping: 15 }}
+                    >
+                      <Avatar className={cn(
+                        "h-11 w-11 shrink-0 border-2 shadow-lg",
+                        message.role === "user" 
+                          ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white border-blue-800 shadow-blue-500/30" 
+                          : "bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 border-indigo-300 dark:border-indigo-700 shadow-indigo-500/20"
                       )}>
-                        {message.role === "user" ? (
-                          <User className="h-4 w-4" />
-                        ) : (
-                          <BotMessageSquare className="h-4 w-4" />
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
+                        <AvatarFallback className={cn(
+                          message.role === "user" 
+                            ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white" 
+                            : "bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40"
+                        )}>
+                          {message.role === "user" ? (
+                            <User className="h-5 w-5" />
+                          ) : (
+                            <BotMessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                    </motion.div>
 
                     {/* Message Bubble */}
                     <div className={cn(
-                      "flex flex-col gap-1 max-w-[85%]",
+                      "flex flex-col gap-2 max-w-[75%] sm:max-w-[80%]",
                       message.role === "user" ? "items-end" : "items-start"
                     )}>
                       <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: index * 0.05 + 0.1, duration: 0.3 }}
                         className={cn(
-                          "rounded-2xl px-4 py-3 shadow-sm",
+                          "rounded-2xl px-5 py-4 shadow-lg backdrop-blur-sm",
                           message.role === "user"
-                            ? "bg-accent text-accent-foreground rounded-br-sm"
-                            : "bg-muted text-foreground rounded-bl-sm border border-border/50"
+                            ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-br-md shadow-blue-500/30"
+                            : "bg-white/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 rounded-bl-md border-2 border-zinc-200/50 dark:border-zinc-700/50 shadow-zinc-500/10"
                         )}
-                        whileHover={{ scale: 1.01 }}
+                        whileHover={{ 
+                          scale: 1.02,
+                          boxShadow: message.role === "user" 
+                            ? "0 10px 25px -5px rgba(59, 130, 246, 0.4)" 
+                            : "0 10px 25px -5px rgba(0, 0, 0, 0.1)"
+                        }}
                         transition={{ duration: 0.2 }}
                       >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                        <p className={cn(
+                          "text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words",
+                          message.role === "user" ? "text-white" : "text-zinc-800 dark:text-zinc-100"
+                        )}>
                           {message.content}
                         </p>
                       </motion.div>
-                      <p className={cn(
-                        "text-xs px-1",
-                        message.role === "user" ? "text-muted-foreground" : "text-muted-foreground"
-                      )}>
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.05 + 0.3 }}
+                        className={cn(
+                          "text-xs px-2 font-medium",
+                          message.role === "user" 
+                            ? "text-zinc-500 dark:text-zinc-400" 
+                            : "text-zinc-500 dark:text-zinc-400"
+                        )}
+                      >
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                      </motion.p>
                     </div>
                   </motion.div>
                 ))
               )}
             </AnimatePresence>
 
-            {/* Loading Indicator */}
+            {/* Loading Indicator with Animation */}
             {isLoading && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className="flex gap-4 items-start"
               >
-                <Avatar className="h-8 w-8 shrink-0 border border-border bg-muted">
-                  <AvatarFallback className="bg-muted">
-                    <BotMessageSquare className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="bg-muted border border-border/50 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Loader className="h-4 w-4 animate-spin text-accent" />
-                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Avatar className="h-11 w-11 shrink-0 border-2 border-indigo-300 dark:border-indigo-700 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 shadow-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40">
+                      <BotMessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "auto" }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white/90 dark:bg-zinc-800/90 border-2 border-zinc-200/50 dark:border-zinc-700/50 rounded-2xl rounded-bl-md px-5 py-4 shadow-lg backdrop-blur-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Loader className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </motion.div>
+                    <motion.span
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                      className="text-sm text-zinc-700 dark:text-zinc-300 font-medium"
+                    >
+                      Thinking...
+                    </motion.span>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
             <div ref={chatEndRef} />
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="border-t border-border bg-background/95 backdrop-blur-sm shrink-0">
-          <form onSubmit={handleSubmit} className="w-full px-6 py-4">
+        {/* Input Area - Enhanced with Animations */}
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="border-t-2 border-zinc-200/50 dark:border-zinc-800/50 bg-gradient-to-r from-white via-blue-50/50 to-indigo-50/50 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-800 backdrop-blur-sm shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]"
+        >
+          <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
             <div className="flex gap-3 items-end">
               <div className="flex-1 relative">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask a question about your analysis..."
-                  className="min-h-[60px] max-h-[200px] rounded-xl border-border bg-background resize-none pr-12 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 transition-all"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
-                  rows={1}
-                />
+                <motion.div
+                  whileFocus={{ scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative"
+                >
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask a question about your analysis..."
+                    className="min-h-[70px] max-h-[200px] rounded-2xl border-2 border-zinc-300/50 dark:border-zinc-700/50 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm resize-none pr-14 focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500 dark:focus-visible:border-indigo-400 transition-all text-sm sm:text-base shadow-lg placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit(e);
+                      }
+                    }}
+                    rows={1}
+                  />
+                  {input.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute right-3 bottom-3"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                    </motion.div>
+                  )}
+                </motion.div>
               </div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
                 <Button
                   type="submit"
                   disabled={!input.trim() || isLoading}
                   size="icon"
-                  className="h-[60px] w-[60px] rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="h-[70px] w-[70px] rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-700 hover:via-blue-700 hover:to-indigo-800 text-white shadow-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all border-2 border-indigo-500/20"
                 >
                   {isLoading ? (
-                    <Loader className="h-5 w-5 animate-spin" />
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Loader className="h-5 w-5" />
+                    </motion.div>
                   ) : (
-                    <Send className="h-5 w-5" />
+                    <motion.div
+                      whileHover={{ x: 2, y: -2 }}
+                      transition={{ type: "spring", stiffness: 400 }}
+                    >
+                      <Send className="h-5 w-5" />
+                    </motion.div>
                   )}
                 </Button>
               </motion.div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2 px-1">
-              Press Enter to send, Shift+Enter for new line
-            </p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-xs text-zinc-500 dark:text-zinc-400 mt-3 px-1 font-medium flex items-center gap-2"
+            >
+              <span className="hidden sm:inline">Press</span>
+              <kbd className="px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded text-xs font-mono border border-zinc-300 dark:border-zinc-700">Enter</kbd>
+              <span>to send,</span>
+              <kbd className="px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded text-xs font-mono border border-zinc-300 dark:border-zinc-700">Shift+Enter</kbd>
+              <span>for new line</span>
+            </motion.p>
           </form>
-        </div>
-      </Card>
-    </motion.div>
+        </motion.div>
+    </div>
   );
 }
 
