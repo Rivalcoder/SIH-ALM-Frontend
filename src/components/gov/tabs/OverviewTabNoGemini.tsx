@@ -64,7 +64,8 @@ export function OverviewTabNoGemini({ analysis, safeData }: OverviewTabNoGeminiP
     },
     {
       label: "Energy",
-      value: `${safeData?.paralinguistics?.energy?.energy_db || '0'} dB`,
+      // Prefer mean_energy (0-1 range) to avoid negative dB display
+      value: `${(safeData?.paralinguistics?.energy?.mean_energy ?? 0).toFixed(3)}`,
       color: "#eab308"
     },
     {
@@ -135,7 +136,8 @@ export function OverviewTabNoGemini({ analysis, safeData }: OverviewTabNoGeminiP
             />
             <StatCard
               title="Energy"
-              value={`${safeData.paralinguistics?.energy?.energy_db || '0'} dB`}
+            // Show normalized mean energy instead of negative dB value
+            value={`${(safeData.paralinguistics?.energy?.mean_energy ?? 0).toFixed(3)}`}
               icon={Zap}
               description="Audio energy level"
               index={6}
@@ -203,8 +205,7 @@ export function OverviewTabNoGemini({ analysis, safeData }: OverviewTabNoGeminiP
                 This audio contains <span className="font-semibold text-foreground">{speakerCount}</span> speaker{speakerCount !== 1 ? "s" : ""} speaking in{" "}
                 <span className="font-semibold text-foreground">{getLanguageName(analysis.language)}</span>. The audio includes a{" "}
                 <span className="font-semibold text-foreground">{analysis.audio_event.replace(/_/g, " ")}</span> event mixed at{" "}
-                <span className="font-semibold text-foreground">{(analysis.mixing_ratios.nonspeech * 100).toFixed(0)}%</span> non-speech content. The analysis generated{" "}
-                <span className="font-semibold text-foreground">{analysis.question_answer_pair.length}</span> question-answer pair{analysis.question_answer_pair.length !== 1 ? "s" : ""} from the content.
+                <span className="font-semibold text-foreground">{(analysis.mixing_ratios.nonspeech * 100).toFixed(0)}%</span> non-speech content.
               </p>
             </CardContent>
           </div>

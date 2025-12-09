@@ -23,7 +23,7 @@ export function generateDummyAudioResponse(filename: string): ProcessAudioRespon
     speaker: seg.speaker,
     start: seg.start,
     end: seg.end,
-    text: `Speaker ${i + 1} transcription segment. This is dummy data for testing purposes when the API server is unavailable.`,
+    text: `Speaker ${i + 1} transcript is unavailable while the API is offline.`,
     language: "english",
   }));
 
@@ -32,11 +32,10 @@ export function generateDummyAudioResponse(filename: string): ProcessAudioRespon
     id: i + 1,
     start: (i * duration) / 5,
     end: ((i + 1) * duration) / 5,
-    text: `This is transcription segment ${i + 1} from the audio file. It contains dummy data generated for testing when the API server is unavailable.`,
+    text: `Transcript segment ${i + 1} is unavailable while the API is offline.`,
     words: [
-      { word: "This", start: (i * duration) / 5, end: (i * duration) / 5 + 0.5 },
-      { word: "is", start: (i * duration) / 5 + 0.5, end: (i * duration) / 5 + 0.7 },
-      { word: "dummy", start: (i * duration) / 5 + 0.7, end: (i * duration) / 5 + 1.2 },
+      { word: "offline", start: (i * duration) / 5, end: (i * duration) / 5 + 0.8 },
+      { word: "placeholder", start: (i * duration) / 5 + 0.8, end: (i * duration) / 5 + 1.6 },
     ],
   }));
 
@@ -66,6 +65,9 @@ export function generateDummyAudioResponse(filename: string): ProcessAudioRespon
     { start: 25.5, end: 26.0, duration: 0.5 },
   ];
 
+  const placeholderTranscript =
+    "Transcription unavailable because the API is offline. Try again once connectivity is restored.";
+
   return {
     session_id: sessionId,
     filename: filename,
@@ -78,8 +80,8 @@ export function generateDummyAudioResponse(filename: string): ProcessAudioRespon
         duration_s: duration,
       },
       transcription: {
-        original_text: "This is a dummy transcription generated for testing purposes when the API server is unavailable. The actual transcription would contain the spoken words from the audio file. This text is used to populate all fields with dummy data so that the application can continue to function and display results even when the backend API is not accessible.",
-        english_translation: "This is a dummy transcription generated for testing purposes when the API server is unavailable. The actual transcription would contain the spoken words from the audio file.",
+        original_text: placeholderTranscript,
+        english_translation: placeholderTranscript,
         detected_language: "english",
         language_confidence: 0.92,
         model_used: "whisper-large-v3",

@@ -14,6 +14,7 @@ export type DatasetSample = {
   language: string;
   duration: number;
   transcription: string;
+  is_placeholder?: boolean;
   diarization: DiarizationSegment[];
   audio_event: string;
   paralinguistics: Record<string, unknown>;
@@ -40,7 +41,8 @@ export const DATASET_SAMPLES: DatasetSample[] = [
     audio_id: "audio_000001",
     language: "hindi",
     duration: 5.23,
-    transcription: "इस मामले में कोर्ट द्वारा निर्देश दिया गया है",
+  transcription: "इस मामले में कोर्ट द्वारा निर्देश दिया गया है",
+  is_placeholder: false,
     diarization: [
       { speaker: "spk_0", start: 0.0, end: 2.6 },
       { speaker: "spk_1", start: 2.6, end: 5.23 },
@@ -77,7 +79,8 @@ export const DATASET_SAMPLES: DatasetSample[] = [
     audio_id: "audio_000002",
     language: "english",
     duration: 8.41,
-    transcription: "The traffic signal at MG Road has been temporarily diverted.",
+  transcription: "The traffic signal at MG Road has been temporarily diverted.",
+  is_placeholder: false,
     diarization: [
       { speaker: "announcer", start: 0.0, end: 6.5 },
       { speaker: "background", start: 0.0, end: 8.41 },
@@ -114,7 +117,8 @@ export const DATASET_SAMPLES: DatasetSample[] = [
     audio_id: "audio_000003",
     language: "tamil",
     duration: 4.02,
-    transcription: "இன்று இரவு மழை பெய்யும் என்று வானிலை மையம் கூறியுள்ளது.",
+  transcription: "இன்று இரவு மழை பெய்யும் என்று வானிலை மையம் கூறியுள்ளது.",
+  is_placeholder: false,
     diarization: [
       { speaker: "news_reader", start: 0.0, end: 4.02 },
     ],
@@ -146,7 +150,8 @@ export const DATASET_SAMPLES: DatasetSample[] = [
     audio_id: "audio_000004",
     language: "hinglish",
     duration: 6.75,
-    transcription: "Railway station pe announcement thodi der ke liye delay ho gaya hai.",
+  transcription: "Railway station pe announcement thodi der ke liye delay ho gaya hai.",
+  is_placeholder: false,
     diarization: [
       { speaker: "station_announce", start: 0.0, end: 4.0 },
       { speaker: "crowd", start: 0.0, end: 6.75 },

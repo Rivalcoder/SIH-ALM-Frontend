@@ -8,6 +8,7 @@ interface ResultsNavigationProps {
   onTabChange: (tab: string) => void;
   showSidebar: boolean;
   onShowSidebar: () => void;
+  hiddenTabs?: string[];
 }
 
 const tabs = [
@@ -23,7 +24,10 @@ export function ResultsNavigation({
   onTabChange,
   showSidebar,
   onShowSidebar,
+  hiddenTabs = [],
 }: ResultsNavigationProps) {
+  const visibleTabs = tabs.filter((tab) => !hiddenTabs.includes(tab.id));
+
   return (
     <motion.nav
       initial={{ opacity: 0 }}
@@ -52,7 +56,7 @@ export function ResultsNavigation({
         <div className="flex items-center justify-center h-14 md:h-16">
           {/* Tab Navigation - Desktop */}
           <div className="hidden md:flex items-center justify-center gap-2 flex-1">
-            {tabs.map((tab, index) => (
+            {visibleTabs.map((tab, index) => (
               <motion.button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
@@ -177,7 +181,7 @@ export function ResultsNavigation({
                 zIndex: 1,
               }}
             >
-            {tabs.map((tab) => (
+            {visibleTabs.map((tab) => (
               <motion.button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}

@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bot, User, Send, Loader2, ShieldCheck, FileSearch } from "lucide-react";
 import { ChatMessage } from "@/lib/analyzeTypes";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -133,7 +135,7 @@ export function ChatInterface({ messages, isLoading, onSubmit, onScrollChange }:
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+        <div className="w-full max-w-5xl mx-auto px-4 sm:px-8 py-8 space-y-6">
           <AnimatePresence mode="popLayout">
             {messages.length === 0 ? (
               <motion.div
@@ -211,14 +213,29 @@ export function ChatInterface({ messages, isLoading, onSubmit, onScrollChange }:
                     message.role === "user" ? "items-end" : "items-start"
                   )}>
                     <div className={cn(
-                      "px-4 py-3 shadow-sm text-sm border",
+                      "px-6 py-5 shadow-sm text-base leading-7 border",
                       message.role === "user"
-                        ? "bg-blue-600 text-white border-blue-700 rounded-lg rounded-tr-none"
-                        : "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 rounded-lg rounded-tl-none"
+                        ? "bg-blue-600 text-white border-blue-700 rounded-xl rounded-tr-none"
+                        : "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 rounded-xl rounded-tl-none"
                     )}>
-                      <p className="whitespace-pre-wrap leading-relaxed">
-                        {message.content}
-                      </p>
+                      {message.role === "assistant" ? (
+                        <div className="prose prose-lg max-w-none prose-headings:mt-5 prose-headings:mb-3 prose-p:my-4 prose-p:leading-8 prose-li:my-2 prose-li:leading-7 prose-ol:list-decimal prose-ul:list-disc prose-ul:my-3 prose-ol:my-3 prose-pre:bg-zinc-950 prose-pre:text-zinc-100 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 dark:prose-invert">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              a: ({node, ...props}) => (
+                                <a {...props} rel="noreferrer" target="_blank" />
+                              ),
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap leading-relaxed">
+                          {message.content}
+                        </p>
+                      )}
                     </div>
                     <span className="text-[10px] uppercase font-semibold text-zinc-400 dark:text-zinc-500 tracking-wider">
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

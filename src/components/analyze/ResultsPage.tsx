@@ -6,7 +6,7 @@ import { Sparkles, Waves } from "lucide-react";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { ChatMessage } from "@/lib/analyzeTypes";
 import { useToast } from "@/hooks/use-toast";
-import { chatAboutAudio } from "@/lib/api/client";
+import { chatAboutAudio, chatAboutAudioStream } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { translateText as aiTranslateText } from "@/lib/aiUtils";
 import { ResultsNavigation } from "./ResultsNavigation";
@@ -85,10 +85,32 @@ export function ResultsPage({
   const lastScrollYRef = useRef(0);
   const [isChatScrolling, setIsChatScrolling] = useState(false);
   const { toast } = useToast();
+  const isPlaceholder = Boolean(
+    currentAnalysis?.is_placeholder ||
+    currentAnalysis?.transcription?.toLowerCase?.().includes("api is offline") ||
+    currentAnalysis?.audio_id?.startsWith("dummy_session_")
+  );
 
   useEffect(() => {
     setChatMessages(initialChatMessages);
   }, [initialChatMessages]);
+
+  const availableTabs = [
+    "overview",
+    "transcript",
+    "insights",
+    "visualizations",
+    "chat",
+  ].filter((tab) => {
+    if (!isPlaceholder) return true;
+    return tab === "chat"; // Hide other tabs for placeholder data
+  });
+
+  useEffect(() => {
+    if (!availableTabs.includes(activeTab) && availableTabs.length > 0) {
+      setActiveTab(availableTabs[0]);
+    }
+  }, [activeTab, availableTabs]);
 
   // Handle scroll for content area only (not window scroll)
   const contentRef = useRef<HTMLDivElement>(null);
@@ -249,21 +271,40 @@ export function ResultsPage({
     setIsChatLoading(true);
 
     try {
-      // Call the real chat API
-      const chatResponse = await chatAboutAudio(sessionId, message);
+      // Placeholder assistant message for streaming updates
+      const assistantId = `${Date.now() + 1}`;
+      const assistantMessage: ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+      };
+      setChatMessages((prev) => [...prev, assistantMessage]);
+
+      // Stream from API
+      const chatResponse = await chatAboutAudioStream(sessionId, message, (chunk) => {
+        setChatMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId ? { ...m, content: (m.content || "") + chunk } : m
+          )
+        );
+      }).catch(async (streamErr) => {
+        // Fallback to non-streaming if streaming fails
+        console.warn("Streaming failed, falling back to standard chat:", streamErr);
+        const fallback = await chatAboutAudio(sessionId, message);
+        return fallback;
+      });
 
       if (chatResponse.error) {
         throw new Error(chatResponse.error);
       }
 
-      const aiResponse: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: chatResponse.answer,
-        timestamp: new Date(),
-      };
-
-      setChatMessages((prev) => [...prev, aiResponse]);
+      // Ensure final content is set (covers fallback or stream completion)
+      setChatMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId ? { ...m, content: chatResponse.answer || m.content } : m
+        )
+      );
     } catch (error) {
       console.error("Chat request failed:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to get AI response";
@@ -424,6 +465,7 @@ export function ResultsPage({
             onTabChange={setActiveTab}
             showSidebar={showSidebar}
             onShowSidebar={onShowSidebar}
+            hiddenTabs={isPlaceholder ? ["overview", "transcript", "insights", "visualizations"] : []}
           />
         </motion.div>
       </div>

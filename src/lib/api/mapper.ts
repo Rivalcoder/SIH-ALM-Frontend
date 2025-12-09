@@ -10,6 +10,11 @@ export function mapApiResponseToDatasetSample(
   originalFileName: string
 ): DatasetSample {
   const { results, session_id } = apiResponse;
+  const placeholderTranscript = results.transcription?.original_text || "";
+  const isPlaceholder =
+    placeholderTranscript.toLowerCase().includes("api is offline") ||
+    placeholderTranscript.toLowerCase().includes("placeholder analysis") ||
+    (session_id || "").startsWith("dummy_session_");
 
   // Map diarization segments
   const diarization: DiarizationSegment[] = (results.diarization?.segments || []).map((seg) => ({
@@ -122,7 +127,18 @@ export function mapApiResponseToDatasetSample(
     emotions: results.paralinguistics?.emotion?.all_emotions || {},
     dominant_emotion: results.paralinguistics?.emotion?.emotion?.toLowerCase() || "neutral",
     speaking_rate: 0, // Not provided by backend, could be calculated
-    energy: results.paralinguistics?.energy?.mean_energy || 0,
+    energy: {
+      mean_energy: results.paralinguistics?.energy?.mean_energy ?? 0,
+      energy_db: results.paralinguistics?.energy?.energy_db ?? null,
+      min_energy: results.paralinguistics?.energy?.min_energy ?? null,
+      max_energy: results.paralinguistics?.energy?.max_energy ?? null,
+      energy_variance: results.paralinguistics?.energy?.energy_variance ?? null,
+    },
+    gender: {
+      gender: results.paralinguistics?.gender?.gender || "unknown",
+      confidence: results.paralinguistics?.gender?.confidence ?? null,
+      all_scores: results.paralinguistics?.gender?.all_scores || {},
+    },
     spectral_centroid: 0, // Not provided by backend
     background_events: allBackgroundEvents, // Store all background events with scores
     diarization_with_text: results.diarization_with_text?.segments || [], // Store diarization with text for proper transcript display
@@ -188,6 +204,7 @@ export function mapApiResponseToDatasetSample(
     language: language,
     duration: parseFloat((results.audio?.duration_s || 0).toFixed(2)),
     transcription: results.transcription?.original_text || "",
+    is_placeholder: isPlaceholder,
     diarization: diarization,
     audio_event: audioEvent,
     paralinguistics: paralinguistics,

@@ -47,6 +47,49 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
     return emotion.charAt(0).toUpperCase() + emotion.slice(1);
   };
 
+  // Gender confidence scores (female/male) from paralinguistics
+  const genderConfidence = useMemo(() => {
+    const genderInfo = (analysis.paralinguistics as any)?.gender || {};
+    const allScoresRaw = genderInfo.all_scores || {};
+    // Normalize possible key shapes (lower/upper case, arrays)
+    const femaleScore =
+      typeof allScoresRaw === "object" && !Array.isArray(allScoresRaw)
+        ? Number(
+            allScoresRaw.female ??
+            allScoresRaw.Female ??
+            allScoresRaw.FEMALE ??
+            allScoresRaw["f"] ??
+            0
+          )
+        : Array.isArray(allScoresRaw)
+        ? Number(allScoresRaw[0] ?? 0)
+        : Number(allScoresRaw ?? 0);
+    const maleScore =
+      typeof allScoresRaw === "object" && !Array.isArray(allScoresRaw)
+        ? Number(
+            allScoresRaw.male ??
+            allScoresRaw.Male ??
+            allScoresRaw.MALE ??
+            allScoresRaw["m"] ??
+            0
+          )
+        : Array.isArray(allScoresRaw)
+        ? Number(allScoresRaw[1] ?? 0)
+        : 0;
+
+    const safeFemale = Number.isFinite(femaleScore) ? femaleScore : 0;
+    const safeMale = Number.isFinite(maleScore) ? maleScore : 0;
+
+    return {
+      label: genderInfo.gender || "unknown",
+      confidencePct: (genderInfo.confidence ?? 0) * 100,
+      scores: [
+        { name: "Female", value: safeFemale * 100 },
+        { name: "Male", value: safeMale * 100 },
+      ],
+    };
+  }, [analysis]);
+
   // Extract all background events from paralinguistics (stored directly from API)
   const backgroundEvents = useMemo(() => {
     const paralinguistics = analysis.paralinguistics as {
@@ -101,7 +144,7 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
 
   return (
     <div className="w-full space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
         <ChartCard
           title="Audio Metrics"
           description="Duration and mixing ratios analysis"
@@ -199,6 +242,55 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
             </ResponsiveContainer>
           </div>
         </ChartCard>
+
+        <ChartCard
+          title="Gender Confidence"
+          description={`Detected: ${genderConfidence.label} (${genderConfidence.confidencePct.toFixed(1)}% confidence)`}
+          index={2}
+        >
+          <div className="h-64 w-full bg-transparent">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={genderConfidence.scores} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+                <XAxis
+                  dataKey="name"
+                  stroke="hsl(var(--foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  tick={{ fill: "hsl(var(--foreground))" }}
+                />
+                <YAxis
+                  stroke="hsl(var(--foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  tick={{ fill: "hsl(var(--foreground))" }}
+                  domain={[0, 100]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "var(--radius)",
+                    boxShadow: "0 4px 24px hsl(0 0% 0% / 0.1)",
+                    color: "hsl(var(--foreground))",
+                  }}
+                  formatter={(val: number) => `${val.toFixed(2)}%`}
+                />
+                <Bar
+                  dataKey="value"
+                  radius={[8, 8, 0, 0]}
+                  isAnimationActive={true}
+                  animationDuration={900}
+                  animationEasing="ease-out"
+                >
+                  {genderConfidence.scores.map((entry, index) => {
+                    const colors = ["#ec4899", "#3b82f6"];
+                    return <Cell key={`gender-${index}`} fill={colors[index % colors.length]} />;
+                  })}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
       </div>
 
       {/* Emotion and Background Events Summary */}
@@ -261,52 +353,28 @@ export function VisualizationsTab({ analysis }: VisualizationsTabProps) {
               {/* Background Events */}
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3">Background Events</h3>
-                <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
                   {backgroundEvents.length > 0 ? (
-                    backgroundEvents.map((event, index) => (
-                      <div key={index} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium text-foreground">
-                            {event.name.split(", ").map(word =>
-                              word.charAt(0).toUpperCase() + word.slice(1)
-                            ).join(", ")}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {event.percentage.toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${event.percentage}%` }}
-                            transition={{ duration: 0.8, delay: 0.4 + index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
-                          />
-                        </div>
-                      </div>
+                    backgroundEvents.slice(0, 3).map((event, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 text-xs sm:text-sm font-semibold rounded-full bg-gradient-to-r from-purple-500/90 to-pink-500/80 text-white shadow-sm"
+                      >
+                        {event.name
+                          .split(", ")
+                          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(", ")}
+                      </span>
                     ))
                   ) : (
                     // Fallback to single event if parsing fails
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-foreground">
-                          {analysis.audio_event.replace(/_/g, " ").split(" ").map(word =>
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(" ")}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {(analysis.mixing_ratios.nonspeech * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${analysis.mixing_ratios.nonspeech * 100}%` }}
-                          transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
-                        />
-                      </div>
-                    </div>
+                    <span className="px-3 py-1 text-xs sm:text-sm font-semibold rounded-full bg-gradient-to-r from-purple-500/90 to-pink-500/80 text-white shadow-sm">
+                      {analysis.audio_event
+                        .replace(/_/g, " ")
+                        .split(" ")
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(" ")}
+                    </span>
                   )}
                 </div>
               </div>

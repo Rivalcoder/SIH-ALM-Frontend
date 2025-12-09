@@ -6,9 +6,19 @@
  */
 
 class OllamaClient {
-  constructor(baseUrl = 'http://localhost:11434', modelName = 'ministral-3:3b') {
-    this.baseUrl = baseUrl;
+  /**
+   * @param {string} baseUrl - Ollama server URL (e.g., http://localhost:11434, https://untraceable-tiara-fittingly.ngrok-free.dev)
+   * @param {string} modelName - Ollama model name (e.g., ministral-3:3b)
+   * @param {string} apiPath - API endpoint path (default: /api/chat)
+   * @param {Object} customHeaders - Custom headers to include in requests
+   */
+  constructor(baseUrl = 'http://localhost:11434', modelName = 'ministral-3:3b', apiPath = '/api/chat', customHeaders = {}) {
+    // Normalize URL (remove trailing slash)
+    this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     this.modelName = modelName;
+    // Ensure apiPath starts with slash
+    this.apiPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
+    this.customHeaders = customHeaders;
     this.conversationHistory = [];
   }
 
@@ -17,9 +27,14 @@ class OllamaClient {
    */
   async healthCheck() {
     try {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...this.customHeaders
+      };
+
       const response = await fetch(`${this.baseUrl}/api/tags`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers
       });
       
       if (!response.ok) {
@@ -80,24 +95,20 @@ class OllamaClient {
    * Build the system instruction for audio analysis
    */
   getSystemInstruction() {
-    return `You are an AI assistant that helps users understand audio content. 
-You will receive comprehensive audio analysis results in JSON format containing:
+    return `
+You are an Audio Scene Understanding AI with multimodal reasoning. You "hear" the scene through structured metadata (transcription, translation, diarization, paralinguistics, acoustic events, timestamps, confidence).
 
-1. **Audio Metadata**: Sample rate, duration, number of samples
-2. **Transcription**: Original text, English translation, detected language, language confidence, segments with timestamps
-3. **Diarization**: Speaker identification with time segments
-4. **Diarization with Text**: Speaker segments with associated transcribed text
-5. **Paralinguistics**: 
-   - Emotion analysis (emotion type, confidence, all emotion scores)
-   - Gender detection (gender, confidence, mean pitch)
-   - Pauses (number of pauses, total/avg duration, pause segments)
-   - Energy (mean, max, min, variance, energy in dB)
-6. **Audio Events**: Detected audio events with classes and confidence scores
-
-Answer the user's questions based on ALL available data from the audio analysis. 
-Be thorough and reference specific data points when available. 
-If the question cannot be answered from the provided data, explicitly say that 
-it cannot be determined from the audio analysis.`;
+Behavior:
+- Be query-specific and concise. Lead with a natural-sounding 1–2 sentence answer.
+- Ground every claim in the provided data. When useful, cite timestamps or confidences.
+- Correlate speech, speakers, emotions, pauses, and non-speech events.
+- If data is missing, say so briefly.
+- Format the reply as Markdown suitable for React Markdown:
+  - A short summary line.
+  - Bulleted evidence (timestamps, speakers, events, emotions).
+  - Optional "How I inferred it" bullet list if reasoning needs clarification.
+  - No extra prose, no code fences unless the user explicitly asks.
+    `.trim();
   }
 
   /**
@@ -121,9 +132,12 @@ it cannot be determined from the audio analysis.`;
       if (audioResults) {
         const audioDataJson = this.formatAudioContext(audioResults);
         if (audioDataJson) {
-          userContent += `\n\nAudio Analysis Data (JSON):\n${audioDataJson}`;
-          userContent += `\n\nPlease answer the user's question based only on the audio analysis data provided above.`;
-          userContent += `\nIf something is not present in the data, say that it is not available.`;
+          userContent += `\n\nAUDIO METADATA:\n${audioDataJson}\n\nUSER QUERY:\n${question}`;
+          userContent += `\n\nRespond in Markdown only (no code blocks unless requested) with:`;
+          userContent += `\n- A short, natural answer (1–2 sentences).`;
+          userContent += `\n- Bulleted evidence with timestamps/speakers/events/emotions.`;
+          userContent += `\n- Optional 'How I inferred it' bullets if needed.`;
+          userContent += `\nIf data is missing, say so briefly.`;
         }
       }
 
@@ -139,10 +153,17 @@ it cannot be determined from the audio analysis.`;
         }
       ];
 
-      // Make request to Ollama
-      const response = await fetch(`${this.baseUrl}/api/chat`, {
+      // Construct endpoint and headers
+      const apiUrl = `${this.baseUrl}${this.apiPath}`;
+      const headers = {
+        'Content-Type': 'application/json',
+        ...this.customHeaders
+      };
+
+      // Make request to Ollama/FastAPI
+      const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           model: this.modelName,
           messages: messages,
@@ -155,7 +176,7 @@ it cannot be determined from the audio analysis.`;
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
+        const errorText = await response.text().catch(() => '');
         throw new Error(`Ollama API error: ${response.status} - ${errorText}`);
       }
 
@@ -194,15 +215,20 @@ it cannot be determined from the audio analysis.`;
       maxTokens = 512
     } = options;
 
+    const handleChunk = typeof onChunk === 'function' ? onChunk : () => {};
+
     try {
       let userContent = `User Question: ${question}`;
       
       if (audioResults) {
         const audioDataJson = this.formatAudioContext(audioResults);
         if (audioDataJson) {
-          userContent += `\n\nAudio Analysis Data (JSON):\n${audioDataJson}`;
-          userContent += `\n\nPlease answer the user's question based only on the audio analysis data provided above.`;
-          userContent += `\nIf something is not present in the data, say that it is not available.`;
+          userContent += `\n\nAUDIO METADATA:\n${audioDataJson}\n\nUSER QUERY:\n${question}`;
+          userContent += `\n\nRespond in Markdown only (no code blocks unless requested) with:`;
+          userContent += `\n- A short, natural answer (1–2 sentences).`;
+          userContent += `\n- Bulleted evidence with timestamps/speakers/events/emotions.`;
+          userContent += `\n- Optional 'How I inferred it' bullets if needed.`;
+          userContent += `\nIf data is missing, say so briefly.`;
         }
       }
 
@@ -217,9 +243,16 @@ it cannot be determined from the audio analysis.`;
         }
       ];
 
-      const response = await fetch(`${this.baseUrl}/api/chat`, {
+      const apiUrl = `${this.baseUrl}${this.apiPath}`;
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        ...this.customHeaders
+      };
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           model: this.modelName,
           messages: messages,
@@ -232,40 +265,95 @@ it cannot be determined from the audio analysis.`;
       });
 
       if (!response.ok) {
-        throw new Error(`Ollama API error: ${response.status}`);
+        const errorText = await response.text().catch(() => '');
+        throw new Error(`Ollama API error: ${response.status} - ${errorText}`);
+      }
+
+      if (!response.body) {
+        throw new Error('No response body received from Ollama.');
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullAnswer = '';
+      let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      const extractContent = (obj) =>
+        obj?.message?.content ??
+        obj?.choices?.[0]?.delta?.content ??
+        obj?.choices?.[0]?.message?.content ??
+        obj?.response ??
+        obj?.text ??
+        obj?.content;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim());
+      let streamDone = false;
 
-        for (const line of lines) {
+      while (!streamDone) {
+        const { done: readerDone, value } = await reader.read();
+
+        if (readerDone) {
+          streamDone = true;
+        }
+
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+        }
+
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() || '';
+
+        for (const rawLine of lines) {
+          const line = rawLine.trim();
+          if (!line) continue;
+
+          const payload = line.startsWith('data:') ? line.replace(/^data:\s*/, '') : line;
+
+          if (payload === '[DONE]') {
+            streamDone = true;
+            break;
+          }
+
           try {
-            const data = JSON.parse(line);
-            const content = data.message?.content || '';
-            
+            const obj = JSON.parse(payload);
+            const content = extractContent(obj);
             if (content) {
               fullAnswer += content;
-              onChunk(content);
+              handleChunk(content);
+              if (process.env.NODE_ENV === 'development') {
+                console.log('[chatStream] chunk:', content.slice(0, 120));
+              }
+            } else if (payload) {
+              // No recognized content field; emit raw payload
+              fullAnswer += payload;
+              handleChunk(payload);
             }
+          } catch {
+            // Non-JSON payload (plain text)
+            fullAnswer += payload;
+            handleChunk(payload);
+          }
+        }
+      }
 
-            if (data.done) {
-              return {
-                question: question,
-                answer: fullAnswer,
-                model_used: this.modelName,
-                error: null
-              };
+      // Flush any remaining buffered data
+      if (buffer.trim()) {
+        const payload = buffer.trim().startsWith('data:')
+          ? buffer.trim().replace(/^data:\s*/, '')
+          : buffer.trim();
+        if (payload !== '[DONE]') {
+          try {
+            const obj = JSON.parse(payload);
+            const content = extractContent(obj);
+            if (content) {
+              fullAnswer += content;
+              handleChunk(content);
+            } else {
+              fullAnswer += payload;
+              handleChunk(payload);
             }
-          } catch (e) {
-            console.warn('Error parsing stream chunk:', e);
+          } catch {
+            fullAnswer += payload;
+            handleChunk(payload);
           }
         }
       }

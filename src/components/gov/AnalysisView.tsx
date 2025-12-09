@@ -7,7 +7,6 @@ import { processAudio } from "@/services/api/client";
 import { ProcessAudioResponse as ServicesProcessAudioResponse } from "@/services/api/types";
 import { ProcessAudioResponse as LibProcessAudioResponse } from "@/lib/api/types";
 import { mapApiResponseToDatasetSample } from "@/lib/api/mapper";
-import { generateDummyAudioResponse } from "@/lib/api/dummyData";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { OverviewTabNoGemini } from "./tabs/OverviewTabNoGemini";
 
@@ -167,12 +166,12 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
                             errorString.includes("process-audio");
                         
                         if (isApiFailure) {
-                            // Load dummy data when API fails
-                            console.log("All API endpoints failed. Loading dummy data...");
-                            rawData = generateDummyAudioResponse(audioFile.name) as any;
-                        } else {
-                            throw err;
+                            console.error("All API endpoints failed. Skipping dummy load.");
+                            setErrorMsg("API unavailable. Please start the backend server and retry.");
+                            setStatus('error');
+                            return;
                         }
+                        throw err;
                     }
 
                     // Store the raw data
@@ -196,10 +195,10 @@ export default function AnalysisView({ timeframe, onClose, unitName }: AnalysisV
 
     // Save cache on update
     useEffect(() => {
-        if (analysisData) {
+        if (analysisData && !(datasetSample as any)?.is_placeholder) {
             localStorage.setItem('alm_analysis_cache', JSON.stringify(analysisData));
         }
-    }, [analysisData]);
+    }, [analysisData, datasetSample]);
 
     const clearCache = () => {
         localStorage.removeItem('alm_analysis_cache');

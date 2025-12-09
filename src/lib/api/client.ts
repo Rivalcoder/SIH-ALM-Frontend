@@ -121,6 +121,95 @@ export async function chatAboutAudio(sessionId: string, question: string): Promi
 }
 
 /**
+ * Stream chat about processed audio (SSE)
+ */
+export async function chatAboutAudioStream(
+  sessionId: string,
+  question: string,
+  onChunk: (text: string) => void
+): Promise<ChatResponse> {
+  const requestBody: ChatRequest & { stream?: boolean } = {
+    session_id: sessionId,
+    question,
+    stream: true,
+  };
+
+  const urls = [PRIMARY_API_BASE_URL, SECONDARY_API_BASE_URL];
+  let lastError: Error | null = null;
+
+  for (const baseUrl of urls) {
+    try {
+      const response = await fetch(`${baseUrl}/chat?stream=true`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok || !response.body) {
+        lastError = new Error(`Stream request failed with status ${response.status}`);
+        continue;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullAnswer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
+
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith("data:")) continue;
+          const payload = line.slice(5).trim();
+          if (!payload || payload === "[DONE]") continue;
+
+          try {
+            const data = JSON.parse(payload);
+            const chunk = data.content || "";
+            if (chunk) {
+              fullAnswer += chunk;
+              onChunk(chunk);
+            }
+            if (data.done) {
+              return {
+                question,
+                answer: fullAnswer,
+                model_used: null,
+                error: null,
+              };
+            }
+          } catch (err) {
+            console.warn("Failed to parse stream chunk", err);
+          }
+        }
+      }
+
+      // Stream ended without done flag
+      return {
+        question,
+        answer: fullAnswer,
+        model_used: null,
+        error: null,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Unknown streaming error");
+      continue;
+    }
+  }
+
+  throw lastError || new Error("Failed to stream chat response");
+}
+
+/**
  * Delete a session
  */
 export async function deleteSession(sessionId: string): Promise<DeleteSessionResponse> {

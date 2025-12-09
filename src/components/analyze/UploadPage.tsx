@@ -180,7 +180,7 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
         const welcomeMessage: ChatMessage = {
           id: Date.now().toString(),
           role: "assistant",
-          content: `[Dummy Data Mode] I've loaded dummy analysis data for your audio file "${file.name}" because the API server is unavailable. The analysis shows ${speakerCount} speaker${speakerCount !== 1 ? "s" : ""}, detected language "${languageName}", and identified "${result.audio_event.replace(/_/g, " ")}" as the audio event. This is test data for demonstration purposes.`,
+          content: `[Offline mode] The API is unavailable, so I generated placeholder analysis for "${file.name}". The analysis shows ${speakerCount} speaker${speakerCount !== 1 ? "s" : ""}, detected language "${languageName}", and identified "${result.audio_event.replace(/_/g, " ")}" as the audio event. Replace with live results once connectivity is restored.`,
           timestamp: new Date(),
         };
 
@@ -189,8 +189,8 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
 
         toast({
           variant: "default",
-          title: "Using Dummy Data",
-          description: "API server unavailable. Loaded dummy data for demonstration.",
+          title: "Offline placeholder loaded",
+          description: "API unavailable. Showing placeholder analysis so you can continue.",
         });
       } catch (dummyDataError) {
         // If dummy data loading also fails, show error
