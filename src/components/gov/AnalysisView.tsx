@@ -7,6 +7,7 @@ import { processAudio } from "@/services/api/client";
 import { ProcessAudioResponse as ServicesProcessAudioResponse } from "@/services/api/types";
 import { ProcessAudioResponse as LibProcessAudioResponse } from "@/lib/api/types";
 import { mapApiResponseToDatasetSample } from "@/lib/api/mapper";
+import { generateDummyAudioResponse } from "@/lib/api/dummyData";
 import { DatasetSample } from "@/lib/datasetSamples";
 import { OverviewTabNoGemini } from "./tabs/OverviewTabNoGemini";
 
