@@ -45,12 +45,31 @@ class OllamaClient {
 
   /**
    * Format audio analysis data for the chat prompt
+   * Ensures ALL audio processed fields are included:
+   * - audio (metadata: sample_rate, duration, etc.)
+   * - transcription (original_text, english_translation, segments, etc.)
+   * - diarization (speaker segments)
+   * - diarization_with_text (speaker segments with text)
+   * - paralinguistics (emotion, gender, pauses, energy)
+   * - audio_events (detected audio events)
    */
   formatAudioContext(audioResults) {
     if (!audioResults) return null;
     
     try {
-      return JSON.stringify(audioResults, null, 2);
+      // Ensure all expected fields are included, even if null
+      const fullAudioData = {
+        audio: audioResults.audio || null,
+        transcription: audioResults.transcription || null,
+        diarization: audioResults.diarization || null,
+        diarization_with_text: audioResults.diarization_with_text || null,
+        paralinguistics: audioResults.paralinguistics || null,
+        audio_events: audioResults.audio_events || null,
+        // Include any additional fields that might be present
+        ...audioResults
+      };
+      
+      return JSON.stringify(fullAudioData, null, 2);
     } catch (error) {
       console.error('Error formatting audio context:', error);
       return null;
@@ -62,11 +81,23 @@ class OllamaClient {
    */
   getSystemInstruction() {
     return `You are an AI assistant that helps users understand audio content. 
-You will receive audio analysis results in JSON format containing 
-transcription, diarization, paralinguistics (emotion, pauses, energy), 
-and audio events. Answer the user's questions based on this data clearly 
-and concisely. If the question cannot be answered from the provided data, 
-explicitly say that it cannot be determined from the audio analysis.`;
+You will receive comprehensive audio analysis results in JSON format containing:
+
+1. **Audio Metadata**: Sample rate, duration, number of samples
+2. **Transcription**: Original text, English translation, detected language, language confidence, segments with timestamps
+3. **Diarization**: Speaker identification with time segments
+4. **Diarization with Text**: Speaker segments with associated transcribed text
+5. **Paralinguistics**: 
+   - Emotion analysis (emotion type, confidence, all emotion scores)
+   - Gender detection (gender, confidence, mean pitch)
+   - Pauses (number of pauses, total/avg duration, pause segments)
+   - Energy (mean, max, min, variance, energy in dB)
+6. **Audio Events**: Detected audio events with classes and confidence scores
+
+Answer the user's questions based on ALL available data from the audio analysis. 
+Be thorough and reference specific data points when available. 
+If the question cannot be answered from the provided data, explicitly say that 
+it cannot be determined from the audio analysis.`;
   }
 
   /**
