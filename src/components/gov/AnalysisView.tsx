@@ -619,7 +619,7 @@ Provide clear, concise, and helpful responses based on the audio analysis data p
                                                     <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">English Translation</h3>
                                                 </div>
                                                 <p className="text-emerald-900 dark:text-emerald-200 text-lg leading-relaxed font-serif italic">
-                                                    "{safeData.transcription?.english_translation || "Translation unavailable."}"
+                                                    &ldquo;{safeData.transcription?.english_translation || "Translation unavailable."}&rdquo;
                                                 </p>
                                             </motion.div>
 

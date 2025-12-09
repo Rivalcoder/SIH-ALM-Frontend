@@ -4,7 +4,6 @@ import React, { useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text, Line, Html, Float, Stars, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
-import { motion } from "framer-motion-3d";
 
 // --- Types ---
 interface NeuralNetworkVizProps {

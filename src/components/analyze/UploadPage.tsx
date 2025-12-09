@@ -11,6 +11,7 @@ import { processAudio } from "@/lib/api/client";
 import { mapApiResponseToDatasetSample } from "@/lib/api/mapper";
 import { generateDummyAudioResponse } from "@/lib/api/dummyData";
 import { useToast } from "@/hooks/use-toast";
+import { ProcessingTimeline, ProcessingStep } from "@/components/analyze/ProcessingTimeline";
 
 const features = [
   {
@@ -43,6 +44,7 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
   const [progressMessage, setProgressMessage] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [currentStep, setCurrentStep] = useState<ProcessingStep>("processing_audio");
   const { toast } = useToast();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,28 +64,34 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
     setIsAnalyzing(true);
     setFileName(file.name);
     setProgress(0);
+    setCurrentStep("processing_audio");
 
     try {
       setProgress(10);
-      setProgressMessage("Uploading audio...");
+      setProgressMessage("Processing audio file...");
+      setCurrentStep("processing_audio");
 
       // Call the real API
       const apiResponse = await processAudio(file);
 
       setProgress(30);
       setProgressMessage("Processing transcription...");
+      setCurrentStep("transcription");
 
       setProgress(60);
-      setProgressMessage("Analyzing content and emotions...");
+      setProgressMessage("Detecting emotions...");
+      setCurrentStep("emotion_detection");
 
       setProgress(90);
-      setProgressMessage("Finalizing analysis...");
+      setProgressMessage("Final reasoning...");
+      setCurrentStep("final_reasoning");
 
       // Map API response to DatasetSample format
       const result = mapApiResponseToDatasetSample(apiResponse, file.name);
 
       setProgress(100);
       setProgressMessage("Analysis complete!");
+      setCurrentStep("complete");
 
       // Count unique speakers
       const uniqueSpeakers = new Set(
@@ -131,24 +139,32 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
       // Always load dummy data for any error (since API is down)
       // This ensures the app continues to work even with API failures
       console.log("Loading dummy data due to API failure...");
-      setProgress(30);
-      setProgressMessage("Loading dummy data...");
+      setProgress(10);
+      setProgressMessage("Processing audio file...");
+      setCurrentStep("processing_audio");
 
       try {
         // Generate dummy API response
         const dummyApiResponse = generateDummyAudioResponse(file.name);
 
+        setProgress(30);
+        setProgressMessage("Processing transcription...");
+        setCurrentStep("transcription");
+
         setProgress(60);
-        setProgressMessage("Processing dummy transcription...");
+        setProgressMessage("Detecting emotions...");
+        setCurrentStep("emotion_detection");
 
         setProgress(90);
-        setProgressMessage("Finalizing dummy analysis...");
+        setProgressMessage("Final reasoning...");
+        setCurrentStep("final_reasoning");
 
         // Map dummy API response to DatasetSample format
         const result = mapApiResponseToDatasetSample(dummyApiResponse, file.name);
 
         setProgress(100);
-        setProgressMessage("Dummy data loaded!");
+        setProgressMessage("Analysis complete!");
+        setCurrentStep("complete");
 
         // Count unique speakers
         const uniqueSpeakers = new Set(
@@ -190,6 +206,7 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
       setIsAnalyzing(false);
       setProgress(0);
       setProgressMessage("");
+      setCurrentStep("processing_audio");
     }
   };
 
@@ -300,13 +317,22 @@ export function UploadPage({ onFileProcessed, showSidebar, onShowSidebar }: Uplo
                     />
                     {isUploading || isAnalyzing ? (
                       <>
-                        <div className="relative">
+                        <div className="relative mb-6">
                           <Loader className="h-16 w-16 animate-spin text-primary" />
                           <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse-slow"></div>
                         </div>
-                        <div className="space-y-4 text-center w-full">
-                          <p className="text-xl font-bold font-headline">Analyzing {fileName}...</p>
-                          <p className="text-sm text-foreground/70">{progressMessage}</p>
+                        <div className="space-y-6 text-center w-full">
+                          <div>
+                            <p className="text-xl font-bold font-headline mb-2">Analyzing {fileName}...</p>
+                            <p className="text-sm text-foreground/70">{progressMessage}</p>
+                          </div>
+                          
+                          {/* Processing Timeline */}
+                          <div className="w-full py-4">
+                            <ProcessingTimeline currentStep={currentStep} />
+                          </div>
+
+                          {/* Progress Bar */}
                           <div className="w-full max-w-2xl mx-auto">
                             <Progress value={progress} className="w-full h-3" />
                             <div className="flex justify-between text-xs text-foreground/60 mt-2">
