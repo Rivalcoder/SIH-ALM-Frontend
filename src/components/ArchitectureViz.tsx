@@ -1,0 +1,432 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+export default function ArchitectureViz() {
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        // Variables
+        let scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
+        const tokens: any[] = [];
+        const components: { [key: string]: THREE.Mesh } = {};
+        let animationId: number;
+
+        // Helper Functions
+        function createLabel(text: string, fontSize = 28) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return new THREE.Object3D();
+
+            const fontStr = `bold ${fontSize}px "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+            ctx.font = fontStr;
+            const textWidth = ctx.measureText(text).width;
+            const padding = 15;
+            canvas.width = textWidth + padding * 2;
+            canvas.height = fontSize + padding * 2;
+
+            // Background with rounded corners
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.beginPath();
+            // @ts-ignore - roundRect is relatively new
+            if (ctx.roundRect) {
+                ctx.roundRect(0, 0, canvas.width, canvas.height, 10);
+            } else {
+                ctx.rect(0, 0, canvas.width, canvas.height); // Fallback
+            }
+            ctx.fill();
+
+            // Border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; // Brighter border
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Text
+            ctx.fillStyle = '#ffffff'; // Pure white text
+            ctx.font = fontStr;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = "rgba(0,0,0,1)";
+            ctx.shadowBlur = 4;
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            // Adjust scale based on canvas aspect ratio - Reduced scale factor for smaller labels
+            const scaleFactor = 0.05;
+            sprite.scale.set(canvas.width * scaleFactor, canvas.height * scaleFactor, 1);
+            return sprite;
+        }
+
+        function createComponent(name: string, labelText: string, type: string, color: number, pos: { x: number, y: number, z: number }, scale = 1) {
+            let geometry, material, mesh;
+
+            // Increased base scale for all components to make them more recognizable
+            const baseScale = 1.5;
+            const s = scale * baseScale;
+
+            // Common material properties for "glow" and visibility
+            const commonProps = {
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.3, // Make them glow slightly
+                metalness: 0.3,
+                roughness: 0.2
+            };
+
+            switch (type) {
+                case 'sphere':
+                    geometry = new THREE.SphereGeometry(2 * s, 32, 32);
+                    material = new THREE.MeshPhysicalMaterial({
+                        ...commonProps,
+                        clearcoat: 1.0,
+                        clearcoatRoughness: 0.1
+                    });
+                    break;
+                case 'box':
+                    geometry = new THREE.BoxGeometry(4 * s, 4 * s, 4 * s);
+                    material = new THREE.MeshPhysicalMaterial({
+                        ...commonProps,
+                        clearcoat: 0.5
+                    });
+                    break;
+                case 'octahedron':
+                    geometry = new THREE.OctahedronGeometry(3 * s, 0);
+                    material = new THREE.MeshStandardMaterial({
+                        ...commonProps,
+                        flatShading: true
+                    });
+                    break;
+                case 'dodecahedron':
+                    geometry = new THREE.DodecahedronGeometry(2.5 * s, 0);
+                    material = new THREE.MeshPhysicalMaterial({
+                        ...commonProps,
+                        metalness: 0.6,
+                        roughness: 0.1,
+                        clearcoat: 0.8
+                    });
+                    break;
+                case 'icosahedron':
+                    geometry = new THREE.IcosahedronGeometry(4 * s, 1);
+                    material = new THREE.MeshPhysicalMaterial({
+                        color: color,
+                        wireframe: true,
+                        emissive: color,
+                        emissiveIntensity: 0.5 // Stronger glow for wireframe
+                    });
+                    break;
+                case 'pyramid':
+                    geometry = new THREE.ConeGeometry(3 * s, 5 * s, 4);
+                    material = new THREE.MeshStandardMaterial({
+                        ...commonProps
+                    });
+                    break;
+                default:
+                    geometry = new THREE.BoxGeometry(2 * s, 2 * s, 2 * s);
+                    material = new THREE.MeshBasicMaterial({ color: color });
+            }
+
+            if (type === 'icosahedron') {
+                mesh = new THREE.Mesh(geometry, material);
+                const innerGeo = new THREE.IcosahedronGeometry(2.5 * s, 0);
+                const innerMat = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.2,
+                    transparent: true,
+                    opacity: 0.7,
+                    shininess: 100
+                });
+                const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+                mesh.add(innerMesh);
+            } else {
+                mesh = new THREE.Mesh(geometry, material);
+            }
+
+            mesh.position.set(pos.x, pos.y, pos.z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+
+            const label = createLabel(labelText);
+            // Position label BELOW the component
+            label.position.set(0, -(4 * s + 3), 0); // Moved slightly further down
+            mesh.add(label);
+
+            components[name] = mesh;
+            return mesh;
+        }
+
+        function createCurvedPath(start: THREE.Vector3, end: THREE.Vector3) {
+            // Create a nice curve
+            const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+            // Offset the midpoint to create an arc, depending on relative positions
+            if (Math.abs(start.y - end.y) < 1) {
+                mid.y += 5; // Arc up for horizontal connections
+            } else {
+                mid.z += 5; // Arc out for vertical connections
+            }
+
+            const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+            const points = curve.getPoints(50);
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.4 });
+            const curveObject = new THREE.Line(geometry, material);
+            scene.add(curveObject);
+
+            // Store curve for token animation if needed, or just re-calculate in token logic
+            return curve;
+        }
+
+        function generateGlowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const context = canvas.getContext('2d');
+            if (context) {
+                const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+                gradient.addColorStop(0, 'rgba(255,255,255,1)');
+                gradient.addColorStop(0.2, 'rgba(255,255,255,0.5)');
+                gradient.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                context.fillStyle = gradient;
+                context.fillRect(0, 0, 32, 32);
+            }
+            return canvas;
+        }
+
+        function createToken(color: number) {
+            const geometry = new THREE.SphereGeometry(0.4, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: color });
+            const token = new THREE.Mesh(geometry, material);
+
+            // Add a glow effect (simple sprite)
+            const spriteMaterial = new THREE.SpriteMaterial({
+                map: new THREE.CanvasTexture(generateGlowTexture()),
+                color: color,
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(2, 2, 1);
+            token.add(sprite);
+
+            scene.add(token);
+            return token;
+        }
+
+        function createWorld() {
+            // Increased Spacing constants to prevent overlap with larger shapes
+            const xSpacing = 35;
+            const ySpacing = 18;
+
+            // Inputs (Left Side) - Spheres
+            createComponent('audioInput', 'Audio Source', 'sphere', 0x3498db, { x: -xSpacing, y: ySpacing, z: 0 }, 0.8);
+            createComponent('textInput', 'Text Source', 'sphere', 0x2ecc71, { x: -xSpacing, y: 0, z: 0 }, 0.8);
+            createComponent('imageInput', 'Image Source', 'sphere', 0x9b59b6, { x: -xSpacing, y: -ySpacing, z: 0 }, 0.8);
+
+            // Processing Block (Center Top)
+            // Grouping visual - Adjusted size
+            const groupGeo = new THREE.BoxGeometry(45, 20, 15); // Widened group box
+            const groupMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.05 });
+            const groupMesh = new THREE.Mesh(groupGeo, groupMat);
+            groupMesh.position.set(0, ySpacing, 0);
+            scene.add(groupMesh);
+
+            const groupLabel = createLabel("Audio Processing", 32);
+            groupLabel.position.set(0, 12, 0);
+            groupMesh.add(groupLabel);
+
+            // Encoder/Decoder - Octahedrons
+            // Moved further apart to fit the new layer
+            components['audioEncoder'] = createComponent('audioEncoder', 'Audio Encoder', 'octahedron', 0xe67e22, { x: -12, y: ySpacing, z: 0 }, 0.9);
+
+            // New Transformer Layer - Dodecahedron
+            components['transformerLayer'] = createComponent('transformerLayer', 'Transformer Layer\n(Attention)', 'dodecahedron', 0xffd700, { x: 0, y: ySpacing, z: 0 }, 1.0);
+
+            components['transformerDecoder'] = createComponent('transformerDecoder', 'Transformer Decoder', 'octahedron', 0xe67e22, { x: 12, y: ySpacing, z: 0 }, 0.9);
+
+            // Reasoning Model (Center Bottom) - Complex Icosahedron
+            components['reasoningModel'] = createComponent('reasoningModel', 'Reasoning Model\n(Multimodal)', 'icosahedron', 0xf1c40f, { x: 0, y: -8, z: 0 }, 1.5);
+
+            // Output (Right Side) - Pyramid
+            components['output'] = createComponent('output', 'Final Output', 'pyramid', 0xe74c3c, { x: xSpacing, y: -8, z: 0 }, 1.0);
+
+            // Connections
+            // Audio Path: Input -> Encoder -> Layer -> Decoder -> Reasoning
+            createCurvedPath(components['audioInput'].position, components['audioEncoder'].position);
+            createCurvedPath(components['audioEncoder'].position, components['transformerLayer'].position);
+            createCurvedPath(components['transformerLayer'].position, components['transformerDecoder'].position);
+            createCurvedPath(components['transformerDecoder'].position, components['reasoningModel'].position);
+
+            // Text/Image Paths
+            createCurvedPath(components['textInput'].position, components['reasoningModel'].position);
+            createCurvedPath(components['imageInput'].position, components['reasoningModel'].position);
+
+            // Output Path
+            createCurvedPath(components['reasoningModel'].position, components['output'].position);
+        }
+
+        function initTokens() {
+            const paths = [
+                // Audio Path: Input -> Encoder -> Layer -> Decoder -> Reasoning
+                { source: 'audioInput', target: 'audioEncoder', color: 0x3498db, speed: 0.005, offset: 0 },
+                { source: 'audioEncoder', target: 'transformerLayer', color: 0x3498db, speed: 0.005, offset: 0.2 },
+                { source: 'transformerLayer', target: 'transformerDecoder', color: 0x3498db, speed: 0.005, offset: 0.4 },
+                { source: 'transformerDecoder', target: 'reasoningModel', color: 0x3498db, speed: 0.005, offset: 0.6 },
+
+                // Text Path
+                { source: 'textInput', target: 'reasoningModel', color: 0x2ecc71, speed: 0.006, offset: 0.2 },
+                { source: 'textInput', target: 'reasoningModel', color: 0x2ecc71, speed: 0.006, offset: 0.7 },
+
+                // Image Path
+                { source: 'imageInput', target: 'reasoningModel', color: 0x9b59b6, speed: 0.006, offset: 0.4 },
+                { source: 'imageInput', target: 'reasoningModel', color: 0x9b59b6, speed: 0.006, offset: 0.9 },
+
+                // Output Path
+                { source: 'reasoningModel', target: 'output', color: 0xffffff, speed: 0.005, offset: 0.5 },
+            ];
+
+            paths.forEach(p => {
+                const tokenMesh = createToken(p.color);
+
+                // Calculate curve for this path
+                const start = components[p.source].position;
+                const end = components[p.target].position;
+                const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+                if (Math.abs(start.y - end.y) < 1) mid.y += 5;
+                else mid.z += 5;
+                const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+
+                tokens.push({
+                    mesh: tokenMesh,
+                    curve: curve,
+                    progress: p.offset,
+                    speed: p.speed
+                });
+            });
+        }
+
+        // Init Scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+
+        // Grid
+        const gridHelper = new THREE.GridHelper(100, 50, 0x444444, 0x222222);
+        gridHelper.position.y = -10;
+        scene.add(gridHelper);
+
+        camera = new THREE.PerspectiveCamera(45, containerRef.current.clientWidth / containerRef.current.clientHeight, 0.1, 1000);
+        camera.position.set(0, 30, 80);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        containerRef.current.appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0x404040, 3);
+        scene.add(ambientLight);
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        scene.add(dirLight);
+
+        const spotLight = new THREE.SpotLight(0x0088ff, 10);
+        spotLight.position.set(-20, 20, 0);
+        spotLight.angle = Math.PI / 4;
+        spotLight.penumbra = 0.5;
+        scene.add(spotLight);
+
+        const spotLight2 = new THREE.SpotLight(0xff8800, 10);
+        spotLight2.position.set(20, 20, 0);
+        spotLight2.angle = Math.PI / 4;
+        spotLight2.penumbra = 0.5;
+        scene.add(spotLight2);
+
+        // Controls
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.1;
+
+        // Populate World
+        createWorld();
+        initTokens();
+
+        // Resize handler
+        const handleResize = () => {
+            if (!containerRef.current) return;
+            camera.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+        };
+        window.addEventListener('resize', handleResize);
+
+        // Animation Loop
+        const animate = () => {
+            animationId = requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Animate components
+            for (const key in components) {
+                const obj = components[key];
+                if (key === 'reasoningModel') {
+                    obj.rotation.y = time * 0.2;
+                    obj.rotation.z = Math.sin(time * 0.5) * 0.1;
+                } else if (key.includes('Encoder') || key.includes('Decoder')) {
+                    obj.rotation.x = time * 0.3;
+                    obj.rotation.y = time * 0.3;
+                } else if (key === 'output') {
+                    obj.rotation.y = -time * 0.5;
+                }
+            }
+
+            // Update tokens
+            tokens.forEach(token => {
+                token.progress += token.speed;
+                if (token.progress >= 1) token.progress = 0;
+
+                const position = token.curve.getPoint(token.progress);
+                token.mesh.position.copy(position);
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        };
+
+        animate();
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            cancelAnimationFrame(animationId);
+            if (containerRef.current && containerRef.current.contains(renderer.domElement)) {
+                containerRef.current.removeChild(renderer.domElement);
+            }
+            renderer.dispose();
+            // Optional: Dispose geometries and materials if needed to prevent leaks in long sessions,
+            // though React unmount usually handles GC well if references are dropped.
+        };
+    }, []);
+
+    return <div ref={containerRef} className="w-full h-full min-h-[600px] bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800" />;
+}
