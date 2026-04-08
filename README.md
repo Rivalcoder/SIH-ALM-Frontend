@@ -7,7 +7,6 @@
 **Organizing Body:** AICTE  
 
 ---
-
 ## Overview
 
 **Audio Language Model (ALM)** is a **fully offline, edge-native surveillance and audio intelligence system** engineered for deployment in **high-security and mission-critical environments** such as airports, railway stations, hospitals, public infrastructure, and defence installations.
